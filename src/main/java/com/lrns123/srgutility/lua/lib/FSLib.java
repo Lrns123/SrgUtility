@@ -23,7 +23,7 @@ public class FSLib extends TwoArgFunction
 	{
 		LuaTable t = new LuaTable();
 		
-		bind(t, FSLibV.class, new String[] {"list", "exists", "isDir", "getName", "getSize", "makeDir", "move", "copy", "delete"});
+		bind(t, FSLibV.class, new String[] {"list", "exists", "isDir", "getName", "getSize", "makeDir", "move", "copy", "delete", "combine"});
 
 		env.set("fs", t);
 		env.get("package").get("loaded").set("fs", t);
@@ -56,7 +56,8 @@ public class FSLib extends TwoArgFunction
 		    		return copy(args.arg1(), args.arg(2));
 		    	case 8: // fs.delete(path)
 		    		return delete(args.arg1());
-		    	
+		    	case 9:
+		    		return combine(args.arg1(), args.arg(2));
 		    }
 		    return LuaValue.NIL;
 		}
@@ -182,5 +183,11 @@ public class FSLib extends TwoArgFunction
 	{
 		File file = new File(path.checkjstring());
 		return LuaValue.valueOf(file.delete());
+	}
+	
+	private static LuaValue combine(LuaValue root, LuaValue path)
+	{
+		File file = new File(root.checkjstring(), path.checkjstring());
+		return LuaValue.valueOf(file.getAbsolutePath());
 	}
 }
