@@ -1,6 +1,6 @@
 --[[
 **
-**	Srg Utility - Mod Deobfuscation
+**	Srg Utility - Mod deobfuscation mappings
 **
 **  Target mappings:
 **  - Obfuscated -> Packaged MCP (obf2pkgmcp.srg)
