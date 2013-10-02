@@ -28,6 +28,7 @@ package com.lrns123.srgutility.lua.lib;
 
 import java.io.File;
 import java.io.IOException;
+
 import net.md_5.specialsource.Jar;
 import net.md_5.specialsource.JarComparer;
 import net.md_5.specialsource.SpecialSource;
@@ -54,10 +55,12 @@ import com.lrns123.srgutility.srg.SrgMethod;
 
 public class MappingLib extends TwoArgFunction
 {	
-	public MappingLib()
-	{
-	}
+	private static final int OP_LOADSRG = 0;
+	private static final int OP_LOADMCP = 1;
+	private static final int OP_COMPAREJARS = 2;
+	private static final int OP_MAKEINHERITANCEMAP = 3;
 
+	@Override
 	public LuaValue call(LuaValue modname, LuaValue env)
 	{
 		LuaTable t = new LuaTable();
@@ -77,13 +80,17 @@ public class MappingLib extends TwoArgFunction
 		{
 		    switch (opcode)
 		    {
-		    	case 0:	// MappingFactory.loadSrg(filename[, filename[, filename[, ...]]])
+		    	case OP_LOADSRG:
+		    		// MappingFactory.loadSrg(filename[, filename[, filename[, ...]]])
 		    		return loadSrgMapping(args);
-		    	case 1: // MappingFactory.loadMCP([fieldsFile], [methodsFile], [packagesFile])
+		    	case OP_LOADMCP:
+		    		// MappingFactory.loadMCP([fieldsFile], [methodsFile], [packagesFile])
 		    		return loadMCPMapping(args.arg1(), args.arg(2), args.arg(3));
-		    	case 2: // MappingFactory.compareJars(inputJarFile, outputJarFile)
+		    	case OP_COMPAREJARS:
+		    		// MappingFactory.compareJars(inputJarFile, outputJarFile)
 		    		return compareJars(args.arg1(), args.arg(2));
-		    	case 3: // MappingFactory.makeInheritanceMap(inputJar, mapping)
+		    	case OP_MAKEINHERITANCEMAP:
+		    		// MappingFactory.makeInheritanceMap(inputJar, mapping)
 		    		return makeInheritanceMap(args.arg1(),args.arg(2));
 		    }
 		    return LuaValue.NIL;

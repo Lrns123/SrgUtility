@@ -46,6 +46,15 @@ public class ZipFileMeta extends LibFunction
 {
 	private static LuaTable metatable;
 
+	private static final int OP_CLOSE = 0;
+	private static final int OP_ENTRIES = 1;
+	private static final int OP_GETENTRY = 2;
+	private static final int OP_GETNAME = 3;
+	private static final int OP_SIZE = 4;
+	private static final int OP_READALL = 5;
+	private static final int OP_EXTRACT = 6;
+	private static final int OP_GC = 7;
+	
 	public static LuaTable getMetaTable()
 	{
 		if (metatable == null)
@@ -68,21 +77,29 @@ public class ZipFileMeta extends LibFunction
 		{
 			switch (opcode)
 			{
-				case 0: // zipfile:close()
+				case OP_CLOSE:
+					// zipfile:close()
 					return close(args.arg1());
-				case 1: // zipfile:entries()
+				case OP_ENTRIES:
+					// zipfile:entries()
 					return entries(args.arg1());
-				case 2: // zipfile:getEntry(path)
+				case OP_GETENTRY:
+					// zipfile:getEntry(path)
 					return getEntry(args.arg1(), args.arg(2));
-				case 3: // zipfile:getName()
+				case OP_GETNAME:
+					// zipfile:getName()
 					return getName(args.arg1());
-				case 4: // zipfile:size()
+				case OP_SIZE:
+					// zipfile:size()
 					return size(args.arg1());
-				case 5: // zipfile:readAll(entry)
+				case OP_READALL:
+					// zipfile:readAll(entry)
 					return readAll(args.arg1(), args.arg(2));
-				case 6: // zipfile:extract(entry, destFile)
+				case OP_EXTRACT:
+					// zipfile:extract(entry, destFile)
 					return extract(args.arg1(), args.arg(2), args.arg(3));
-				case 7: // __gc
+				case OP_GC:
+					// __gc
 					return close(args.arg1());
 			}
 			return LuaValue.NIL;

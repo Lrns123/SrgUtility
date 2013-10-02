@@ -43,6 +43,13 @@ import static com.lrns123.srgutility.lua.util.LuaUtil.getTransformerFromArg;
 public class SrgMappingMeta extends LibFunction
 {
 	private static LuaTable metatable;
+	
+	private static final int OP_SAVE = 0;
+	private static final int OP_CLONE = 1;
+	private static final int OP_REVERSE = 2;
+	private static final int OP_IDENTITY = 3;
+	private static final int OP_TRANSFORM = 4;
+	private static final int OP_FILTER = 5;
 
 	public static LuaTable getMetaTable()
 	{
@@ -66,17 +73,23 @@ public class SrgMappingMeta extends LibFunction
 		{
 			switch (opcode)
 			{
-				case 0: // mapping:save(filename)
+				case OP_SAVE:
+					// mapping:save(filename)
 					return saveToFile(args.arg1(), args.arg(2));
-				case 1: // mapping:clone()
+				case OP_CLONE:
+					// mapping:clone()
 					return SrgMappingMeta.clone(args.arg1());
-				case 2: // mapping:reverse()
+				case OP_REVERSE:
+					// mapping:reverse()
 					return reverse(args.arg1());
-				case 3: // mapping:identity()
+				case OP_IDENTITY:
+					// mapping:identity()
 					return identity(args.arg1());
-				case 4: // mapping:identity(inputTransformer, outputTransformer)
+				case OP_TRANSFORM:
+					// mapping:identity(inputTransformer, outputTransformer)
 					return transform(args.arg1(), args.arg(2), args.arg(3));
-				case 5: // mapping:filter(filterSrg)
+				case OP_FILTER:
+					// mapping:filter(filterSrg)
 					return filter(args.arg1(), args.arg(2));
 			}
 			return LuaValue.NIL;

@@ -41,10 +41,9 @@ import com.lrns123.srgutility.lua.meta.ZipFileMeta;
 
 public class ZipLib extends TwoArgFunction
 {
-	public ZipLib()
-	{
-	}
-
+	private static final int OP_OPEN = 0;
+	
+	@Override
 	public LuaValue call(LuaValue modname, LuaValue env)
 	{
 		LuaTable t = new LuaTable();
@@ -64,7 +63,8 @@ public class ZipLib extends TwoArgFunction
 		{
 		    switch (opcode)
 		    {
-		    	case 0:	// zip.open(filename)
+		    	case OP_OPEN:
+		    		// zip.open(filename)
 		    		return open(args.arg1());
 		    	
 		    }

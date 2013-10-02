@@ -41,10 +41,18 @@ import org.luaj.vm2.lib.VarArgFunction;
 
 public class FSLib extends TwoArgFunction
 {
-	public FSLib()
-	{
-	}
+	private static final int OP_LIST = 0;
+	private static final int OP_EXISTS = 1;
+	private static final int OP_ISDIR = 2;
+	private static final int OP_GETNAME = 3;
+	private static final int OP_GETSIZE = 4;
+	private static final int OP_MAKEDIR = 5;
+	private static final int OP_MOVE = 6;
+	private static final int OP_COPY = 7;
+	private static final int OP_DELETE = 8;
+	private static final int OP_COMBINE = 9;
 
+	@Override
 	public LuaValue call(LuaValue modname, LuaValue env)
 	{
 		LuaTable t = new LuaTable();
@@ -64,25 +72,35 @@ public class FSLib extends TwoArgFunction
 		{
 		    switch (opcode)
 		    {
-		    	case 0:	// fs.list(path)
+		    	case OP_LIST:
+		    		// fs.list(path)
 		    		return list(args.arg1());
-		    	case 1: // fs.exists(path)
+		    	case OP_EXISTS:
+		    		// fs.exists(path)
 		    		return exists(args.arg1());
-		    	case 2: // fs.isDir(path)
+		    	case OP_ISDIR:
+		    		// fs.isDir(path)
 		    		return isDir(args.arg1());
-		    	case 3: // fs.getName(path)
+		    	case OP_GETNAME:
+		    		// fs.getName(path)
 		    		return getName(args.arg1());
-		    	case 4: // fs.getSize(path)
+		    	case OP_GETSIZE:
+		    		// fs.getSize(path)
 		    		return getSize(args.arg1());
-		    	case 5: // fs.makeDir(path)
+		    	case OP_MAKEDIR:
+		    		// fs.makeDir(path)
 		    		return makeDir(args.arg1());
-		    	case 6: // fs.move(source, destination)
+		    	case OP_MOVE:
+		    		// fs.move(source, destination)
 		    		return move(args.arg1(), args.arg(2));
-		    	case 7: // fs.copy(source, destination)
+		    	case OP_COPY:
+		    		// fs.copy(source, destination)
 		    		return copy(args.arg1(), args.arg(2));
-		    	case 8: // fs.delete(path)
+		    	case OP_DELETE:
+		    		// fs.delete(path)
 		    		return delete(args.arg1());
-		    	case 9: // fs.combine(root, path)
+		    	case OP_COMBINE:
+		    		// fs.combine(root, path)
 		    		return combine(args.arg1(), args.arg(2));
 		    }
 		    return LuaValue.NIL;

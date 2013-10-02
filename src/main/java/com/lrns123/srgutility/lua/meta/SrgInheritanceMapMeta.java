@@ -44,6 +44,10 @@ import static com.lrns123.srgutility.lua.util.LuaUtil.getTransformerFromArg;
 public class SrgInheritanceMapMeta extends LibFunction
 {
 	private static LuaTable metatable;
+	
+	private static final int OP_SAVE = 0;
+	private static final int OP_CLONE = 1;
+	private static final int OP_TRANSFORM = 2;
 
 	public static LuaTable getMetaTable()
 	{
@@ -67,11 +71,14 @@ public class SrgInheritanceMapMeta extends LibFunction
 		{
 			switch (opcode)
 			{
-				case 0: // mapping:save(filename)
+				case OP_SAVE:
+					// mapping:save(filename)
 					return saveToFile(args.arg1(), args.arg(2));
-				case 1: // mapping:clone()
+				case OP_CLONE:
+					// mapping:clone()
 					return SrgInheritanceMapMeta.clone(args.arg1());
-				case 2: // mapping:transform(transformer)
+				case OP_TRANSFORM:
+					// mapping:transform(transformer)
 					return transform(args.arg1(), args.arg(2));
 			}
 			return LuaValue.NIL;

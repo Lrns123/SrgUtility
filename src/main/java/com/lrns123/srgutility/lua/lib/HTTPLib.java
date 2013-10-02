@@ -34,6 +34,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+
 import org.apache.commons.io.IOUtils;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaTable;
@@ -46,10 +47,12 @@ public class HTTPLib extends TwoArgFunction
 {
 	private static String userAgent;
 	
-	public HTTPLib()
-	{
-	}
+	private static final int OP_GET = 0;
+	private static final int OP_POST = 1;
+	private static final int OP_DOWNLOAD = 2;
+	private static final int OP_SETUSERAGENT = 3;
 
+	@Override
 	public LuaValue call(LuaValue modname, LuaValue env)
 	{
 		LuaTable t = new LuaTable();
@@ -69,13 +72,17 @@ public class HTTPLib extends TwoArgFunction
 		{
 		    switch (opcode)
 		    {
-		    	case 0:	// HTTP.get(url)
+		    	case OP_GET:
+		    		// HTTP.get(url)
 		    		return httpGet(args.arg1());
-		    	case 1: // HTTP.post(url, postArgs, [contentType])
+		    	case OP_POST:
+		    		// HTTP.post(url, postArgs, [contentType])
 		    		return httpPost(args.arg1(), args.arg(2), args.arg(3));
-		    	case 2: // HTTP.download(url, destFile)
+		    	case OP_DOWNLOAD:
+		    		// HTTP.download(url, destFile)
 		    		return download(args.arg1(), args.arg(2));
-		    	case 3: // HTTP.setUserAgent([agent])
+		    	case OP_SETUSERAGENT:
+		    		// HTTP.setUserAgent([agent])
 		    		return setUserAgent(args.arg1());
 		    	
 		    }
