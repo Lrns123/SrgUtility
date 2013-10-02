@@ -82,7 +82,7 @@ public class FSLib extends TwoArgFunction
 		    		return copy(args.arg1(), args.arg(2));
 		    	case 8: // fs.delete(path)
 		    		return delete(args.arg1());
-		    	case 9:
+		    	case 9: // fs.combine(root, path)
 		    		return combine(args.arg1(), args.arg(2));
 		    }
 		    return LuaValue.NIL;

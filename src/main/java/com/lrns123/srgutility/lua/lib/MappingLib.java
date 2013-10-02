@@ -83,7 +83,7 @@ public class MappingLib extends TwoArgFunction
 		    		return loadMCPMapping(args.arg1(), args.arg(2), args.arg(3));
 		    	case 2: // MappingFactory.compareJars(inputJarFile, outputJarFile)
 		    		return compareJars(args.arg1(), args.arg(2));
-		    	case 3:
+		    	case 3: // MappingFactory.makeInheritanceMap(inputJar, mapping)
 		    		return makeInheritanceMap(args.arg1(),args.arg(2));
 		    }
 		    return LuaValue.NIL;
@@ -240,10 +240,9 @@ public class MappingLib extends TwoArgFunction
 	
 	
 	/**
-	 * Lua Closure for MappingFactory.compareJars(inJar, outJar, [full])
-	 * @param inputJarFile Jar file with input mappings
-	 * @param outputJarFile Jar file with output mappings
-	 * @param fullArg (Optional) Include duplicates, defaults to false.
+	 * Lua Closure for MappingFactory.makeInheritanceMap(jarFile, mappingArg)
+	 * @param jarFile Jar file to make the inheritance map for.
+	 * @param mappingArg Mappings to make the inheritance map for. The inheritance map will only contains symbols also contained in this mapping.
 	 * @return
 	 */
 	private static final LuaValue makeInheritanceMap(LuaValue jarFile, LuaValue mappingArg)
