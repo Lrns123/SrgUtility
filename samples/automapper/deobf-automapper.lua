@@ -26,15 +26,15 @@ local Mapping = AutoMapper.Mapping
 local Inheritance = AutoMapper.Inheritance
 
 local targetMappings = {
-	{ Mapping.OBFUSCATED, Mapping.DECORATED_PACKAGED, "obf2pkgmcp.srg" },
-	{ Mapping.NUMERIC, Mapping.DECORATED_PACKAGED, "num2pkgmcp.srg" },
-	{ Mapping.NUMERIC_PACKAGED, Mapping.DECORATED_PACKAGED, "pkgnum2pkgmcp.srg" },
-	{ Mapping.BUKKIT, Mapping.DECORATED_PACKAGED, "cb2pkgmcp.srg" }
+	{ Mapping.OBFUSCATED, Mapping.DESCRIPTIVE_PACKAGED, "obf2pkgmcp.srg" },
+	{ Mapping.NUMERIC, Mapping.DESCRIPTIVE_PACKAGED, "num2pkgmcp.srg" },
+	{ Mapping.NUMERIC_PACKAGED, Mapping.DESCRIPTIVE_PACKAGED, "pkgnum2pkgmcp.srg" },
+	{ Mapping.BUKKIT, Mapping.DESCRIPTIVE_PACKAGED, "cb2pkgmcp.srg" }
 }
 
 local targetInheritance = {
-	{ Inheritance.NMS, Mapping.DECORATED_PACKAGED, "nms.inheritmap" },
-	{ Inheritance.BUKKIT, Mapping.DECORATED_PACKAGED, "cb.inheritmap" }
+	{ Inheritance.NMS, Mapping.DESCRIPTIVE_PACKAGED, "nms.inheritmap" },
+	{ Inheritance.BUKKIT, Mapping.DESCRIPTIVE_PACKAGED, "cb.inheritmap" }
 }
 
 AutoMapper.generate(targetMappings, targetInheritance)

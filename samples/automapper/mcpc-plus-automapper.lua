@@ -24,8 +24,8 @@ local Mapping = AutoMapper.Mapping
 local Inheritance = AutoMapper.Inheritance
 
 local targetMappings = {
-	{ Mapping.DECORATED_PACKAGED, Mapping.NUMERIC_PACKAGED, "pkgmcp2numpkg.srg" },
-	{ Mapping.DECORATED_PACKAGED, Mapping.OBFUSCATED, "pkgmcp2obf.srg" },
+	{ Mapping.DESCRIPTIVE_PACKAGED, Mapping.NUMERIC_PACKAGED, "pkgmcp2numpkg.srg" },
+	{ Mapping.DESCRIPTIVE_PACKAGED, Mapping.OBFUSCATED, "pkgmcp2obf.srg" },
 	{ Mapping.BUKKIT, Mapping.NUMERIC_PACKAGED, "cb2numpkg.srg" }
 }
 

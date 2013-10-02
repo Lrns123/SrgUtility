@@ -34,7 +34,7 @@
 **  }
 **
 **  * Constants for mappings are available in AutoMapper.Mapping.
-**    Valid constants are: OBFUSCATED, NUMERIC, DECORATED, NUMERIC_PACKAGED, DECORATED_PACKAGED, BUKKIT.
+**    Valid constants are: OBFUSCATED, NUMERIC, DESCRIPTIVE, NUMERIC_PACKAGED, DESCRIPTIVE_PACKAGED, BUKKIT.
 **  
 **  * Constants for inheritance maps are available in AutoMapper.Inheritance.
 **    Valid constants are: NMS, BUKKIT.
@@ -62,9 +62,9 @@ end
 local Mapping = {
 	OBFUSCATED = 0x0,
 	NUMERIC = 0x1,
-	DECORATED = 0x2,
+	DESCRIPTIVE = 0x2,
 	NUMERIC_PACKAGED = 0x3,
-	DECORATED_PACKAGED = 0x4,
+	DESCRIPTIVE_PACKAGED = 0x4,
 	BUKKIT = 0x5
 }
 AutoMapper.Mapping = constantProxy(Mapping)
@@ -148,7 +148,7 @@ end
   || INTERNAL FUNCTION
   ||
   || Verifies if all necessary settings are provided.
-  || Throws an error if any settings is missing.
+  || Throws an error if any setting is missing.
 --]]-------------------------------------------------------------------
 local function verifySettings()
 	if (d_cacheDir == nil) then
@@ -174,16 +174,16 @@ local function checkMappingType(id)
 	elseif (id == Mapping.NUMERIC) then
 		d_neededMaps.numeric = true
 		return true
-	elseif (id == Mapping.DECORATED) then
-		d_neededMaps.decorated = true
+	elseif (id == Mapping.DESCRIPTIVE) then
+		d_neededMaps.descriptive = true
 		d_neededMaps.mcpNames = true
 		return true
 	elseif (id == Mapping.NUMERIC_PACKAGED) then
 		d_neededMaps.numericPackaged = true
 		d_neededMaps.mcpPackages = true
 		return true
-	elseif (id == Mapping.DECORATED_PACKAGED) then
-		d_neededMaps.decoratedPackaged = true
+	elseif (id == Mapping.DESCRIPTIVE_PACKAGED) then
+		d_neededMaps.descriptivePackaged = true
 		d_neededMaps.mcpNames = true
 		d_neededMaps.mcpPackages = true
 		return true
@@ -407,7 +407,6 @@ end
   || Generates the base maps and transformers.
 --]]-------------------------------------------------------------------
 local function generateBaseMaps()
-	-- Generate baseline
 	print("Generating base maps...")
 	
 	print("\tLoading MCP base mapping")
@@ -431,14 +430,14 @@ local function generateBaseMaps()
 	end
 	
 	if (d_neededMaps.mcpNames) then
-		print("\tLoading decorative symbol information")
+		print("\tLoading descriptive symbol information")
 		d_maps["mcpNames"] = MappingFactory.loadMCP(d_mcpDir .. "fields.csv", d_mcpDir .. "methods.csv", nil)
 	end
 	
-	if (d_neededMaps.decorated) then
-		print("\tGenerating decorative transformer")
+	if (d_neededMaps.descriptive) then
+		print("\tGenerating desriptive transformer")
 		assert(d_maps["mcpNames"])
-		d_maps["decorated"] = d_maps["base"]:clone():transform(nil, d_maps["mcpNames"])
+		d_maps["descriptive"] = d_maps["base"]:clone():transform(nil, d_maps["mcpNames"])
 	end
 	
 	if (d_neededMaps.numericPackaged) then
@@ -447,11 +446,11 @@ local function generateBaseMaps()
 		d_maps["numericPackaged"] = d_maps["base"]:clone():transform(nil, d_maps["mcpPackage"])
 	end
 	
-	if (d_neededMaps.decoratedPackaged) then
-		print("\tGenerating packaged decorative transformer")
+	if (d_neededMaps.descriptivePackaged) then
+		print("\tGenerating packaged descriptive transformer")
 		assert(d_maps["mcpPackage"])
 		assert(d_maps["mcpNames"])
-		d_maps["decoratedPackaged"] = d_maps["base"]:clone():transform(nil, d_maps["mcpPackage"]):transform(nil, d_maps["mcpNames"])
+		d_maps["descriptivePackaged"] = d_maps["base"]:clone():transform(nil, d_maps["mcpPackage"]):transform(nil, d_maps["mcpNames"])
 	end
 	
 	if (d_neededMaps.bukkit) then
@@ -529,12 +528,12 @@ local function getTransformer(mapping)
 		return nil
 	elseif (mapping == Mapping.NUMERIC) then
 		return assertReturn(d_maps["numeric"])
-	elseif (mapping == Mapping.DECORATED) then
-		return assertReturn(d_maps["decorated"])
+	elseif (mapping == Mapping.DESCRIPTIVE) then
+		return assertReturn(d_maps["descriptive"])
 	elseif (mapping == Mapping.NUMERIC_PACKAGED) then
 		return assertReturn(d_maps["numericPackaged"])
-	elseif (mapping == Mapping.DECORATED_PACKAGED) then
-		return assertReturn(d_maps["decoratedPackaged"])
+	elseif (mapping == Mapping.DESCRIPTIVE_PACKAGED) then
+		return assertReturn(d_maps["descriptivePackaged"])
 	elseif (mapping == Mapping.BUKKIT) then
 		return assertReturn(d_maps["bukkit"])
 	else
@@ -553,12 +552,12 @@ local function getName(mapping)
 		return "Obfuscated"
 	elseif (mapping == Mapping.NUMERIC) then
 		return "Numeric"
-	elseif (mapping == Mapping.DECORATIVE) then
-		return "Decorated"
+	elseif (mapping == Mapping.DESCRIPTIVE) then
+		return "Descriptive"
 	elseif (mapping == Mapping.NUMERIC_PACKAGED) then
 		return "Numeric (Packaged)"
-	elseif (mapping == Mapping.DECORATED_PACKAGED) then
-		return "Decorated (Packaged)"
+	elseif (mapping == Mapping.DESCRIPTIVE_PACKAGED) then
+		return "Descriptive (Packaged)"
 	elseif (mapping == Mapping.BUKKIT) then
 		return "Bukkit"
 	elseif (mapping == Inheritance.NMS) then
