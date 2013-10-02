@@ -178,7 +178,7 @@ local function verifySettings()
 		error("Please set the output directory before generating mappings.")
 	elseif (d_minecraftVersion == nil) then
 		error("Please set the desired minecraft version before generating mappings.")
-	elseif (d_forgeVersion == nil and d_confDir == nill) then
+	elseif (d_forgeVersion == nil and d_confDir == nil) then
 		error("Please set either the desired forge version or the conf directory location before generating mappings.")
 	elseif (d_forgeVersion ~= nil and d_confDir ~= nil) then
 		-- Sanity check, this should never be reached.
