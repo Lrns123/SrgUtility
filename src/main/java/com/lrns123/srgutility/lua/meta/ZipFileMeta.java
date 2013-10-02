@@ -132,7 +132,7 @@ public class ZipFileMeta extends LibFunction
 		{
 			ZipEntry entry = files.nextElement();
 			
-			fileTable.set(i++, new LuaUserdata(entry)); // TODO: Metatable
+			fileTable.set(i++, new LuaUserdata(entry, ZipEntryMeta.getMetaTable()));
 		}
 		
 		return fileTable;
@@ -147,7 +147,7 @@ public class ZipFileMeta extends LibFunction
 		if (entry == null)
 			return LuaValue.NIL;
 		else
-			return new LuaUserdata(entry);
+			return new LuaUserdata(entry, ZipEntryMeta.getMetaTable());
 	}
 	
 	private static LuaValue getName(LuaValue instance)
