@@ -15,7 +15,7 @@
 **      AutoMapper.setCacheDir("/some/cache/directory/")
 **      AutoMapper.setOutputDir("/some/output/directory/")
 **      AutoMapper.setMinecraftVersion("1.6.2")
-**      AutoMapper.setForgeVersion("9.10.1.871")
+**      AutoMapper.setForgeVersion("9.10.1.871") OR AutoMapper.setConfDir("/path/to/mcp/conf/")
 ** 
 **  * Create a table with your desired mappings, with the following format:
 **
@@ -82,6 +82,7 @@ local d_cacheDir
 local d_outDir
 local d_minecraftVersion
 local d_forgeVersion
+local d_confDir
 
 local d_clientJar
 local d_serverJar
@@ -138,10 +139,30 @@ end
   ||
   || Sets the desired forge version (x.x.x.x).
   || The version number must not include the minecraft version.
+  ||
+  || Setting this will remove any previously set MCP conf directory.
 --]]-----------------------------------------------------------------------------
 function AutoMapper.setForgeVersion(version)
 	assert(version ~= nil)
 	d_forgeVersion = version
+	d_confDir = nil
+end
+
+--[[-----------------------------------------------------------------------------
+  || API FUNCTION
+  ||
+  || AutoMapper.setConfDir(dir:string)
+  ||
+  || Sets the MCP conf directory.
+  || This will disable the use of Forge, and wipe the forge version setting.
+  ||
+  || Use this to use a custom set of csv's and base mappings instead of
+  ||  obtaining them from Forge.
+--]]-----------------------------------------------------------------------------
+function AutoMapper.setConfDir(dir)
+	assert(dir ~= nil)
+	d_confDir = fs.combine(dir, "") .. "/"
+	d_forgeVersion = nil
 end
 
 --[[-------------------------------------------------------------------
@@ -157,8 +178,11 @@ local function verifySettings()
 		error("Please set the output directory before generating mappings.")
 	elseif (d_minecraftVersion == nil) then
 		error("Please set the desired minecraft version before generating mappings.")
-	elseif (d_forgeVersion == nil) then
-		error("Please set the desired forge version before generating mappings.")
+	elseif (d_forgeVersion == nil and d_confDir == nill) then
+		error("Please set either the desired forge version or the conf directory location before generating mappings.")
+	elseif (d_forgeVersion ~= nil and d_confDir ~= nil) then
+		-- Sanity check, this should never be reached.
+		error("Both the Forge version and conf dir are specified. This should never happen. Please report this bug immediately.")
 	end
 end
 
@@ -316,6 +340,37 @@ end
 --[[-------------------------------------------------------------------
   || INTERNAL FUNCTION
   ||
+  || Checks the conf directory to make sure all necessary files exist.
+  || Throws an error if files could not be found.
+--]]-------------------------------------------------------------------
+local function checkConfDir()
+	print("Checking conf directory...")
+	assert(d_confDir)
+	d_mcpDir = d_confDir
+	if not (fs.exists(d_mcpDir) and fs.isDir(d_mcpDir)) then
+		error("Could not find conf directory")
+	end
+	
+	if (not (fs.exists(d_mcpDir .. "joined.srg") or (fs.exists(d_mcpDir .. "client.srg") and fs.exists(d_mcpDir .. "server.srg")))) then
+		error("Could not find base srg(s).")
+	end
+	
+	if (not fs.exists(d_mcpDir .. "fields.csv")) then
+		error("Could not find fields.csv.")
+	end
+	
+	if (not fs.exists(d_mcpDir .. "methods.csv")) then
+		error("Could not find methods.csv.")
+	end
+	
+	if (not fs.exists(d_mcpDir .. "packages.csv")) then
+		error("Could not find packages.csv.")
+	end
+end
+
+--[[-------------------------------------------------------------------
+  || INTERNAL FUNCTION
+  ||
   || Downloads the required jars as specified by requiredFiles.
 --]]-------------------------------------------------------------------
 local function downloadJars(requiredFiles)
@@ -323,14 +378,11 @@ local function downloadJars(requiredFiles)
 		fs.makeDir(d_cacheDir)
 	end
 
-	d_clientJar = string.format("%sclient_%s.jar", d_cacheDir, d_minecraftVersion)
-	d_serverJar = string.format("%sserver_%s.jar", d_cacheDir, d_minecraftVersion)
-	d_bukkitJar = string.format("%sbukkit_%s.jar", d_cacheDir, d_minecraftVersion)
-	d_forgeZip = string.format("%sforge_%s-%s.zip", d_cacheDir, d_minecraftVersion, d_forgeVersion)
-	
-	print("Checking jars...")
+	print("Acquiring required jars...")
 	
 	if (requiredFiles.client) then
+		d_clientJar = string.format("%sclient_%s.jar", d_cacheDir, d_minecraftVersion)
+		
 		if (not fs.exists(d_clientJar)) then
 			print("\tDownloading minecraft client jar...")
 			HTTP.download(string.format("http://s3.amazonaws.com/Minecraft.Download/versions/%s/%s.jar", d_minecraftVersion, d_minecraftVersion), d_clientJar)
@@ -340,6 +392,8 @@ local function downloadJars(requiredFiles)
 	end
 	
 	if (requiredFiles.server) then
+		d_serverJar = string.format("%sserver_%s.jar", d_cacheDir, d_minecraftVersion)
+		
 		if (not fs.exists(d_serverJar)) then
 			print("\tDownloading minecraft server jar...")
 			HTTP.download(string.format("http://s3.amazonaws.com/Minecraft.Download/versions/%s/minecraft_server.%s.jar", d_minecraftVersion, d_minecraftVersion), d_serverJar)
@@ -349,6 +403,8 @@ local function downloadJars(requiredFiles)
 	end
 	
 	if (requiredFiles.bukkit) then
+		d_bukkitJar = string.format("%sbukkit_%s.jar", d_cacheDir, d_minecraftVersion)
+		
 		if (not fs.exists(d_bukkitJar)) then
 			print("\tDownloading Bukkit server jar...")
 			HTTP.download(string.format("http://repo.bukkit.org/content/repositories/releases/org/bukkit/minecraft-server/%s/minecraft-server-%s.jar", d_minecraftVersion, d_minecraftVersion), d_bukkitJar)
@@ -358,6 +414,9 @@ local function downloadJars(requiredFiles)
 	end
 	
 	if (requiredFiles.forge) then
+		assert(d_forgeVersion)
+		d_forgeZip = string.format("%sforge_%s-%s.zip", d_cacheDir, d_minecraftVersion, d_forgeVersion)
+		
 		if (not fs.exists(d_forgeZip)) then
 			print("\tDownloading Minecraft Forge zip...")
 			HTTP.download(string.format("http://files.minecraftforge.net/minecraftforge/minecraftforge-src-%s-%s.zip", d_minecraftVersion, d_forgeVersion), d_forgeZip)
@@ -374,8 +433,12 @@ end
   ||  mappings, and will download them if necessary.
 --]]-------------------------------------------------------------------
 local function prepareJars()
-	local neededFiles = { forge = true }
+	local neededFiles = {}
 	local k,v
+	
+	if (d_forgeVersion) then
+		neededFiles.forge = true
+	end
 	
 	for k,v in pairs(d_targetMappings) do
 		if (v[1] == Mapping.BUKKIT or v[2] == Mapping.BUKKIT) then
@@ -435,7 +498,7 @@ local function generateBaseMaps()
 	end
 	
 	if (d_neededMaps.descriptive) then
-		print("\tGenerating desriptive transformer")
+		print("\tGenerating descriptive transformer")
 		assert(d_maps["mcpNames"])
 		d_maps["descriptive"] = d_maps["base"]:clone():transform(nil, d_maps["mcpNames"])
 	end
@@ -586,7 +649,13 @@ function AutoMapper.generate(mappings, inheritance)
 	
 	verifyInput()
 	prepareJars()
-	prepareConfDir()
+	
+	if (d_forgeVersion) then
+		prepareConfDir()
+	else
+		checkConfDir()
+	end
+	
 	generateBaseMaps()
 	
 	print("Generating mappings..")
