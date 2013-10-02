@@ -98,6 +98,7 @@
 					<archive>
 						<manifestEntries>
 							<Main-Class>${main.class}</Main-Class>
+							<Implementation-Version>${buildVersion}</Implementation-Version>
 						</manifestEntries>
 					</archive>
 				</configuration>
@@ -131,4 +132,29 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<profiles>
+		<profile>
+			<id>static_build_number</id>
+			<activation>
+				<property>
+					<name>!env.BUILD_NUMBER</name>
+				</property>
+			</activation>
+			<properties>
+				<buildVersion>${project.version}</buildVersion>
+			</properties>
+		</profile>
+		<profile>
+			<id>dynamic_build_number</id>
+			<activation>
+				<property>
+					<name>env.BUILD_NUMBER</name>
+				</property>
+			</activation>
+			<properties>
+				<buildVersion>${project.version}-B${env.BUILD_NUMBER}</buildVersion>
+			</properties>
+		</profile>
+	</profiles>
 </project>

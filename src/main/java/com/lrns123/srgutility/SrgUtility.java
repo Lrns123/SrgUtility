@@ -27,7 +27,6 @@
 package com.lrns123.srgutility;
 
 import java.io.File;
-
 import static java.util.Arrays.asList;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -49,7 +48,7 @@ public class SrgUtility
 		};
 		
 		OptionSet options = parser.parse(args);
-		if (options.has("?") || options.nonOptionArguments().size() == 0)
+		if (options.has("?"))
 		{
 			try
 			{
@@ -59,21 +58,40 @@ public class SrgUtility
 			{
 			}
 		}
-		else if (options.has("v"))
-		{
-			// TODO
-		}
 		else
 		{
+			if (options.has("v"))
+			{
+				System.out.println("SrgUtility v" + getVersionNumber());
+			}			
+			
 			int count = options.nonOptionArguments().size();
 			
-			LuaVM vm = new LuaVM(options.has("d"));
-			for (int i = 0; i != count; ++i)
+			if (count == 0)
 			{
-				String filename = (String)options.nonOptionArguments().get(i);
-				vm.loadFile(new File(filename));
+				System.out.println("No scripts to run.");
+			}
+			else
+			{
+				LuaVM vm = new LuaVM(options.has("d"));
+				for (int i = 0; i != count; ++i)
+				{
+					String filename = (String)options.nonOptionArguments().get(i);
+					vm.loadFile(new File(filename));
+				}
 			}
 		}
-
+	}
+	
+	private static String getVersionNumber()
+	{
+		try
+		{
+			return SrgUtility.class.getPackage().getImplementationVersion();
+		}
+		catch (Exception e)
+		{
+			return "Unknown";
+		}
 	}
 }
