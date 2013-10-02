@@ -88,10 +88,10 @@ public class MappingLib extends TwoArgFunction
 		    		return loadMCPMapping(args.arg1(), args.arg(2), args.arg(3));
 		    	case OP_COMPAREJARS:
 		    		// MappingFactory.compareJars(inputJarFile, outputJarFile)
-		    		return compareJars(args.arg1(), args.arg(2));
+		    		return compareJars(args.arg1().checkjstring(), args.arg(2).checkjstring());
 		    	case OP_MAKEINHERITANCEMAP:
 		    		// MappingFactory.makeInheritanceMap(inputJar, mapping)
-		    		return makeInheritanceMap(args.arg1(),args.arg(2));
+		    		return makeInheritanceMap(args.arg1().checkjstring(), (SrgMapping)args.arg(2).checkuserdata(SrgMapping.class));
 		    }
 		    return LuaValue.NIL;
 		}
@@ -173,10 +173,10 @@ public class MappingLib extends TwoArgFunction
 	 * @param fullArg (Optional) Include duplicates, defaults to false.
 	 * @return
 	 */
-	private static final LuaValue compareJars(LuaValue inputJarFile, LuaValue outputJarFile)
+	private static final LuaValue compareJars(String inputJarFile, String outputJarFile)
 	{
-		File inputJar = new File(inputJarFile.checkjstring());
-		File outputJar = new File(outputJarFile.checkjstring());
+		File inputJar = new File(inputJarFile);
+		File outputJar = new File(outputJarFile);
 
 		try
 		{
@@ -252,10 +252,9 @@ public class MappingLib extends TwoArgFunction
 	 * @param mappingArg Mappings to make the inheritance map for. The inheritance map will only contains symbols also contained in this mapping.
 	 * @return
 	 */
-	private static final LuaValue makeInheritanceMap(LuaValue jarFile, LuaValue mappingArg)
+	private static final LuaValue makeInheritanceMap(String jarFile, SrgMapping mapping)
 	{
-		File inputJar = new File(jarFile.checkjstring());
-		SrgMapping mapping = (SrgMapping) mappingArg.checkuserdata(SrgMapping.class);
+		File inputJar = new File(jarFile);
 
 		try
 		{

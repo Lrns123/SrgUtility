@@ -74,42 +74,42 @@ public class FSLib extends TwoArgFunction
 		    {
 		    	case OP_LIST:
 		    		// fs.list(path)
-		    		return list(args.arg1());
+		    		return list(args.arg1().checkjstring());
 		    	case OP_EXISTS:
 		    		// fs.exists(path)
-		    		return exists(args.arg1());
+		    		return exists(args.arg1().checkjstring());
 		    	case OP_ISDIR:
 		    		// fs.isDir(path)
-		    		return isDir(args.arg1());
+		    		return isDir(args.arg1().checkjstring());
 		    	case OP_GETNAME:
 		    		// fs.getName(path)
-		    		return getName(args.arg1());
+		    		return getName(args.arg1().checkjstring());
 		    	case OP_GETSIZE:
 		    		// fs.getSize(path)
-		    		return getSize(args.arg1());
+		    		return getSize(args.arg1().checkjstring());
 		    	case OP_MAKEDIR:
 		    		// fs.makeDir(path)
-		    		return makeDir(args.arg1());
+		    		return makeDir(args.arg1().checkjstring());
 		    	case OP_MOVE:
 		    		// fs.move(source, destination)
-		    		return move(args.arg1(), args.arg(2));
+		    		return move(args.arg1().checkjstring(), args.arg(2).checkjstring());
 		    	case OP_COPY:
 		    		// fs.copy(source, destination)
-		    		return copy(args.arg1(), args.arg(2));
+		    		return copy(args.arg1().checkjstring(), args.arg(2).checkjstring());
 		    	case OP_DELETE:
 		    		// fs.delete(path)
-		    		return delete(args.arg1());
+		    		return delete(args.arg1().checkjstring());
 		    	case OP_COMBINE:
 		    		// fs.combine(root, path)
-		    		return combine(args.arg1(), args.arg(2));
+		    		return combine(args.arg1().checkjstring(), args.arg(2).checkjstring());
 		    }
 		    return LuaValue.NIL;
 		}
 	}
 	
-	private static LuaValue list(LuaValue path)
+	private static LuaValue list(String path)
 	{
-		File dir = new File(path.checkjstring());
+		File dir = new File(path);
 		
 		String[] fileList = dir.list();
 		if (fileList == null)
@@ -124,47 +124,47 @@ public class FSLib extends TwoArgFunction
 		return fileTable;
 	}
 	
-	private static LuaValue exists(LuaValue path)
+	private static LuaValue exists(String path)
 	{
-		File file = new File(path.checkjstring());
+		File file = new File(path);
 		return LuaValue.valueOf(file.exists());
 	}
 	
-	private static LuaValue isDir(LuaValue path)
+	private static LuaValue isDir(String path)
 	{
-		File file = new File(path.checkjstring());
+		File file = new File(path);
 		return LuaValue.valueOf(file.isDirectory());
 	}
 	
-	private static LuaValue getName(LuaValue path)
+	private static LuaValue getName(String path)
 	{
-		File file = new File(path.checkjstring());
+		File file = new File(path);
 		return LuaValue.valueOf(file.getName());
 	}
 	
-	private static LuaValue getSize(LuaValue path)
+	private static LuaValue getSize(String path)
 	{
-		File file = new File(path.checkjstring());
+		File file = new File(path);
 		return LuaValue.valueOf(file.length());
 	}
 	
-	private static LuaValue makeDir(LuaValue path)
+	private static LuaValue makeDir(String path)
 	{
-		File file = new File(path.checkjstring());
+		File file = new File(path);
 		return LuaValue.valueOf(file.mkdirs());
 	}
 	
-	private static LuaValue move(LuaValue source, LuaValue destination)
+	private static LuaValue move(String source, String destination)
 	{
 		copy(source, destination);
 		delete(source);		
 		return LuaValue.NIL;
 	}
 	
-	private static LuaValue copy(LuaValue source, LuaValue destination)
+	private static LuaValue copy(String source, String destination)
 	{
-		File srcFile = new File(source.checkjstring());
-		File destFile = new File(destination.checkjstring());
+		File srcFile = new File(source);
+		File destFile = new File(destination);
 
 		if (srcFile.exists())
 			throw new LuaError("File does not exist: " + srcFile.getAbsolutePath());
@@ -223,15 +223,15 @@ public class FSLib extends TwoArgFunction
 		return LuaValue.NIL;
 	}
 	
-	private static LuaValue delete(LuaValue path)
+	private static LuaValue delete(String path)
 	{
-		File file = new File(path.checkjstring());
+		File file = new File(path);
 		return LuaValue.valueOf(file.delete());
 	}
 	
-	private static LuaValue combine(LuaValue root, LuaValue path)
+	private static LuaValue combine(String root, String path)
 	{
-		File file = new File(root.checkjstring(), path.checkjstring());
+		File file = new File(root, path);
 		return LuaValue.valueOf(file.getAbsolutePath());
 	}
 }

@@ -71,39 +71,38 @@ public class SrgMappingMeta extends LibFunction
 		@Override
 		public Varargs invoke(Varargs args)
 		{
+			SrgMapping instance = (SrgMapping)args.arg1().checkuserdata(SrgMapping.class);
+			
 			switch (opcode)
 			{
 				case OP_SAVE:
 					// mapping:save(filename)
-					return saveToFile(args.arg1(), args.arg(2));
+					return saveToFile(instance, args.arg(2).checkjstring());
 				case OP_CLONE:
 					// mapping:clone()
-					return SrgMappingMeta.clone(args.arg1());
+					return SrgMappingMeta.clone(instance);
 				case OP_REVERSE:
 					// mapping:reverse()
-					return reverse(args.arg1());
+					return reverse(instance);
 				case OP_IDENTITY:
 					// mapping:identity()
-					return identity(args.arg1());
+					return identity(instance);
 				case OP_TRANSFORM:
 					// mapping:identity(inputTransformer, outputTransformer)
-					return transform(args.arg1(), args.arg(2), args.arg(3));
+					return transform(instance, getTransformerFromArg(args.arg(2)), getTransformerFromArg(args.arg(3)));
 				case OP_FILTER:
 					// mapping:filter(filterSrg)
-					return filter(args.arg1(), args.arg(2));
+					return filter(instance, (SrgMapping)args.arg(2).checkuserdata(SrgMapping.class));
 			}
 			return LuaValue.NIL;
 		}
 	}
 
-	private static LuaValue saveToFile(LuaValue instance, LuaValue fileArg)
+	private static LuaValue saveToFile(SrgMapping instance, String filename)
 	{
-		SrgMapping mapping = (SrgMapping) instance.checkuserdata(SrgMapping.class);
-		String filename = fileArg.checkjstring();
-
 		try
 		{
-			mapping.write(new File(filename));
+			instance.write(new File(filename));
 			return LuaValue.NIL;
 		}
 		catch (Exception e)
@@ -112,39 +111,28 @@ public class SrgMappingMeta extends LibFunction
 		}
 	}
 
-	private static LuaValue clone(LuaValue instance)
+	private static LuaValue clone(SrgMapping instance)
 	{
-		SrgMapping mapping = (SrgMapping) instance.checkuserdata(SrgMapping.class);
-		return new LuaUserdata(mapping.clone(), SrgMappingMeta.getMetaTable());
+		return new LuaUserdata(instance.clone(), SrgMappingMeta.getMetaTable());
 	}
 
-	private static LuaValue reverse(LuaValue instance)
+	private static LuaValue reverse(SrgMapping instance)
 	{
-		SrgMapping mapping = (SrgMapping) instance.checkuserdata(SrgMapping.class);
-		return new LuaUserdata(mapping.reverse(), SrgMappingMeta.getMetaTable());
+		return new LuaUserdata(instance.reverse(), SrgMappingMeta.getMetaTable());
 	}
 	
-	private static LuaValue identity(LuaValue instance)
+	private static LuaValue identity(SrgMapping instance)
 	{
-		SrgMapping mapping = (SrgMapping) instance.checkuserdata(SrgMapping.class);
-		return new LuaUserdata(mapping.identity(), SrgMappingMeta.getMetaTable());
+		return new LuaUserdata(instance.identity(), SrgMappingMeta.getMetaTable());
 	}
 
-	private static LuaValue transform(LuaValue instance, LuaValue inputTransformerArg, LuaValue outputTransformerArg)
+	private static LuaValue transform(SrgMapping instance, MappingTransformer inputTransformer, MappingTransformer outputTransformer)
 	{
-		SrgMapping mapping = (SrgMapping) instance.checkuserdata(SrgMapping.class);
-
-		MappingTransformer inputTransformer = getTransformerFromArg(inputTransformerArg);
-		MappingTransformer outputTransformer = getTransformerFromArg(outputTransformerArg);
-
-		return new LuaUserdata(mapping.transform(inputTransformer, outputTransformer), SrgMappingMeta.getMetaTable());
+		return new LuaUserdata(instance.transform(inputTransformer, outputTransformer), SrgMappingMeta.getMetaTable());
 	}
 	
-	private static LuaValue filter(LuaValue instance, LuaValue filter)
+	private static LuaValue filter(SrgMapping instance, SrgMapping filter)
 	{
-		SrgMapping mapping = (SrgMapping) instance.checkuserdata(SrgMapping.class);
-		SrgMapping filterMapping = (SrgMapping) filter.checkuserdata(SrgMapping.class);
-
-		return new LuaUserdata(mapping.filter(filterMapping), SrgMappingMeta.getMetaTable());
+		return new LuaUserdata(instance.filter(filter), SrgMappingMeta.getMetaTable());
 	}
 }

@@ -65,18 +65,18 @@ public class ZipLib extends TwoArgFunction
 		    {
 		    	case OP_OPEN:
 		    		// zip.open(filename)
-		    		return open(args.arg1());
+		    		return open(args.arg1().checkjstring());
 		    	
 		    }
 		    return LuaValue.NIL;
 		}
 	}
 	
-	private static LuaValue open(LuaValue pathArg)
+	private static LuaValue open(String path)
 	{
 		try
 		{
-			return new LuaUserdata(new ZipFile(new File(pathArg.checkjstring())), ZipFileMeta.getMetaTable());
+			return new LuaUserdata(new ZipFile(new File(path)), ZipFileMeta.getMetaTable());
 		}
 		catch (Exception e)
 		{

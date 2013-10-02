@@ -74,27 +74,27 @@ public class HTTPLib extends TwoArgFunction
 		    {
 		    	case OP_GET:
 		    		// HTTP.get(url)
-		    		return httpGet(args.arg1());
+		    		return httpGet(args.arg1().checkjstring());
 		    	case OP_POST:
 		    		// HTTP.post(url, postArgs, [contentType])
-		    		return httpPost(args.arg1(), args.arg(2), args.arg(3));
+		    		return httpPost(args.arg1().checkjstring(), args.arg(2).checkjstring(), args.arg(3).isnil() ? null : args.arg(3).checkjstring());
 		    	case OP_DOWNLOAD:
 		    		// HTTP.download(url, destFile)
-		    		return download(args.arg1(), args.arg(2));
+		    		return download(args.arg1().checkjstring(), args.arg(2).checkjstring());
 		    	case OP_SETUSERAGENT:
 		    		// HTTP.setUserAgent([agent])
-		    		return setUserAgent(args.arg1());
+		    		return setUserAgent(args.arg1().isnil() ? null : args.arg1().checkjstring());
 		    	
 		    }
 		    return LuaValue.NIL;
 		}
 	}
 	
-	private static LuaValue httpGet(LuaValue urlArg)
+	private static LuaValue httpGet(String urlArg)
 	{
 		try
 		{
-			URL url = new URL(urlArg.checkjstring());
+			URL url = new URL(urlArg);
 			
 			URLConnection connection = url.openConnection();
 			connection.setConnectTimeout(15000);
@@ -119,12 +119,12 @@ public class HTTPLib extends TwoArgFunction
 		}
 	}
 	
-	private static LuaValue httpPost(LuaValue urlArg, LuaValue postArgsArg, LuaValue contentTypeArg)
+	private static LuaValue httpPost(String urlArg, String postArgsArg, String contentTypeArg)
 	{
 		try
 		{
-			URL url = new URL(urlArg.checkjstring());
-			String postArgs = postArgsArg.checkjstring();
+			URL url = new URL(urlArg);
+			String postArgs = postArgsArg;
 			
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			byte[] paramAsBytes = postArgs.getBytes(Charset.forName("UTF-8"));
@@ -138,9 +138,9 @@ public class HTTPLib extends TwoArgFunction
 				connection.addRequestProperty("User-Agent", "userAgent");
 			}
 			
-			if (!contentTypeArg.isnil())
+			if (contentTypeArg != null)
 			{
-				connection.setRequestProperty("Content-Type", contentTypeArg.checkjstring() + "; charset=utf-8");
+				connection.setRequestProperty("Content-Type", contentTypeArg + "; charset=utf-8");
 			}
 
 			connection.setRequestProperty("Content-Length", "" + paramAsBytes.length);
@@ -164,12 +164,12 @@ public class HTTPLib extends TwoArgFunction
 		}
 	}
 	
-	private static LuaValue download(LuaValue urlArg, LuaValue destArg)
+	private static LuaValue download(String urlArg, String destArg)
 	{
 		try
 		{
-			URL url = new URL(urlArg.checkjstring());
-			File dest = new File(destArg.checkjstring());
+			URL url = new URL(urlArg);
+			File dest = new File(destArg);
 			
 			URLConnection connection = url.openConnection();
 			connection.setConnectTimeout(15000);
@@ -207,17 +207,9 @@ public class HTTPLib extends TwoArgFunction
 		}
 	}
 	
-	private static LuaValue setUserAgent(LuaValue agentArg)
+	private static LuaValue setUserAgent(String agentArg)
 	{
-		if (agentArg.isnil())
-		{
-			userAgent = null;
-		}
-		else
-		{
-			userAgent = agentArg.checkjstring();
-		}
-		
+		userAgent = agentArg;
 		return LuaValue.NIL;
 	}
 	

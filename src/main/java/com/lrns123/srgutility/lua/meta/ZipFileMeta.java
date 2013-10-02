@@ -75,44 +75,44 @@ public class ZipFileMeta extends LibFunction
 		@Override
 		public Varargs invoke(Varargs args)
 		{
+			ZipFile instance = (ZipFile)args.arg1().checkuserdata(ZipFile.class);
+			
 			switch (opcode)
 			{
 				case OP_CLOSE:
 					// zipfile:close()
-					return close(args.arg1());
+					return close(instance);
 				case OP_ENTRIES:
 					// zipfile:entries()
-					return entries(args.arg1());
+					return entries(instance);
 				case OP_GETENTRY:
 					// zipfile:getEntry(path)
-					return getEntry(args.arg1(), args.arg(2));
+					return getEntry(instance, args.arg(2).checkjstring());
 				case OP_GETNAME:
 					// zipfile:getName()
-					return getName(args.arg1());
+					return getName(instance);
 				case OP_SIZE:
 					// zipfile:size()
-					return size(args.arg1());
+					return size(instance);
 				case OP_READALL:
 					// zipfile:readAll(entry)
-					return readAll(args.arg1(), args.arg(2));
+					return readAll(instance, (ZipEntry)args.arg(2).checkuserdata(ZipEntry.class));
 				case OP_EXTRACT:
 					// zipfile:extract(entry, destFile)
-					return extract(args.arg1(), args.arg(2), args.arg(3));
+					return extract(instance, (ZipEntry)args.arg(2).checkuserdata(ZipEntry.class), args.arg(3).checkjstring());
 				case OP_GC:
 					// __gc
-					return close(args.arg1());
+					return close(instance);
 			}
 			return LuaValue.NIL;
 		}
 	}
 
-	private static LuaValue close(LuaValue instance)
-	{
-		ZipFile zipFile = (ZipFile) instance.checkuserdata(ZipFile.class);
-		
+	private static LuaValue close(ZipFile instance)
+	{		
 		try
 		{
-			zipFile.close();
+			instance.close();
 			return LuaValue.NIL;
 		}
 		catch (Exception e)
@@ -121,11 +121,9 @@ public class ZipFileMeta extends LibFunction
 		}
 	}
 
-	private static LuaValue entries(LuaValue instance)
-	{
-		ZipFile zipFile = (ZipFile) instance.checkuserdata(ZipFile.class);
-		
-		Enumeration<? extends ZipEntry> files = zipFile.entries();
+	private static LuaValue entries(ZipFile instance)
+	{		
+		Enumeration<? extends ZipEntry> files = instance.entries();
 		LuaTable fileTable = new LuaTable();		
 		int i = 1;
 		while (files.hasMoreElements())
@@ -138,11 +136,9 @@ public class ZipFileMeta extends LibFunction
 		return fileTable;
 	}
 
-	private static LuaValue getEntry(LuaValue instance, LuaValue pathArg)
-	{
-		ZipFile zipFile = (ZipFile) instance.checkuserdata(ZipFile.class);
-		
-		ZipEntry entry = zipFile.getEntry(pathArg.checkjstring());
+	private static LuaValue getEntry(ZipFile instance, String path)
+	{		
+		ZipEntry entry = instance.getEntry(path);
 		
 		if (entry == null)
 			return LuaValue.NIL;
@@ -150,26 +146,21 @@ public class ZipFileMeta extends LibFunction
 			return new LuaUserdata(entry, ZipEntryMeta.getMetaTable());
 	}
 	
-	private static LuaValue getName(LuaValue instance)
+	private static LuaValue getName(ZipFile instance)
 	{
-		ZipFile zipFile = (ZipFile) instance.checkuserdata(ZipFile.class);
-		return LuaValue.valueOf(zipFile.getName());
+		return LuaValue.valueOf(instance.getName());
 	}
 
-	private static LuaValue size(LuaValue instance)
+	private static LuaValue size(ZipFile instance)
 	{
-		ZipFile zipFile = (ZipFile) instance.checkuserdata(ZipFile.class);
-		return LuaValue.valueOf(zipFile.size());
+		return LuaValue.valueOf(instance.size());
 	}
 	
-	private static LuaValue readAll(LuaValue instance, LuaValue entryArg)
+	private static LuaValue readAll(ZipFile instance, ZipEntry entry)
 	{
-		ZipFile zipFile = (ZipFile) instance.checkuserdata(ZipFile.class);
-		ZipEntry entry = (ZipEntry) entryArg.checkuserdata(ZipEntry.class);
-		
 		try
 		{
-			return LuaValue.valueOf(IOUtils.toString(zipFile.getInputStream(entry)));
+			return LuaValue.valueOf(IOUtils.toString(instance.getInputStream(entry)));
 		}
 		catch (Exception e)
 		{
@@ -177,15 +168,13 @@ public class ZipFileMeta extends LibFunction
 		}
 	}
 	
-	private static LuaValue extract(LuaValue instance, LuaValue entryArg, LuaValue pathArg)
+	private static LuaValue extract(ZipFile instance, ZipEntry entry, String path)
 	{
-		ZipFile zipFile = (ZipFile) instance.checkuserdata(ZipFile.class);
-		ZipEntry entry = (ZipEntry) entryArg.checkuserdata(ZipEntry.class);
-		File destFile = new File(pathArg.checkjstring());
+		File destFile = new File(path);
 		
 		try
 		{
-			InputStream inStream = zipFile.getInputStream(entry);
+			InputStream inStream = instance.getInputStream(entry);
 			FileOutputStream outStream = new FileOutputStream(destFile);
 			
 			

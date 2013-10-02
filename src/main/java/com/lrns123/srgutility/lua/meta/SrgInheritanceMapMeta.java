@@ -69,30 +69,29 @@ public class SrgInheritanceMapMeta extends LibFunction
 		@Override
 		public Varargs invoke(Varargs args)
 		{
+			SrgInheritanceMap instance = (SrgInheritanceMap)args.arg1().checkuserdata(SrgInheritanceMap.class);
+					
 			switch (opcode)
 			{
 				case OP_SAVE:
 					// mapping:save(filename)
-					return saveToFile(args.arg1(), args.arg(2));
+					return saveToFile(instance, args.arg(2).checkjstring());
 				case OP_CLONE:
 					// mapping:clone()
-					return SrgInheritanceMapMeta.clone(args.arg1());
+					return SrgInheritanceMapMeta.clone(instance);
 				case OP_TRANSFORM:
 					// mapping:transform(transformer)
-					return transform(args.arg1(), args.arg(2));
+					return transform(instance, getTransformerFromArg(args.arg(2)));
 			}
 			return LuaValue.NIL;
 		}
 	}
 
-	private static LuaValue saveToFile(LuaValue instance, LuaValue fileArg)
+	private static LuaValue saveToFile(SrgInheritanceMap instance, String filename)
 	{
-		SrgInheritanceMap mapping = (SrgInheritanceMap) instance.checkuserdata(SrgInheritanceMap.class);
-		String filename = fileArg.checkjstring();
-
 		try
 		{
-			mapping.write(new File(filename));
+			instance.write(new File(filename));
 			return LuaValue.NIL;
 		}
 		catch (Exception e)
@@ -101,18 +100,13 @@ public class SrgInheritanceMapMeta extends LibFunction
 		}
 	}
 
-	private static LuaValue clone(LuaValue instance)
+	private static LuaValue clone(SrgInheritanceMap instance)
 	{
-		SrgInheritanceMap mapping = (SrgInheritanceMap) instance.checkuserdata(SrgInheritanceMap.class);
-		return new LuaUserdata(mapping.clone(), SrgInheritanceMapMeta.getMetaTable());
+		return new LuaUserdata(instance.clone(), SrgInheritanceMapMeta.getMetaTable());
 	}
 	
-	private static LuaValue transform(LuaValue instance, LuaValue transformerArg)
+	private static LuaValue transform(SrgInheritanceMap instance, MappingTransformer inputTransformer)
 	{
-		SrgInheritanceMap mapping = (SrgInheritanceMap) instance.checkuserdata(SrgInheritanceMap.class);
-
-		MappingTransformer inputTransformer = getTransformerFromArg(transformerArg);
-
-		return new LuaUserdata(mapping.transform(inputTransformer), SrgInheritanceMapMeta.getMetaTable());
+		return new LuaUserdata(instance.transform(inputTransformer), SrgInheritanceMapMeta.getMetaTable());
 	}
 }
