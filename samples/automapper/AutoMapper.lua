@@ -155,8 +155,7 @@ end
   ||
   || AutoMapper.setBukkitVersion(version:string)
   ||
-  || Sets the desired forge version (x.x.x.x).
-  || The version number must not include the bukkit version.
+  || Sets the desired bukkit version (x.x.x.x).
 --]]-----------------------------------------------------------------------------
 function AutoMapper.setBukkitVersion(version)
 	assert(version ~= nil)
