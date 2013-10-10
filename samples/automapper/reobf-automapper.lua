@@ -15,7 +15,7 @@
 AutoMapper = require("AutoMapper")
 
 AutoMapper.setCacheDir("./cache/")
-AutoMapper.setOutputDir("./1.6.2.deobf/")
+AutoMapper.setOutputDir("./1.6.2.reobf/")
 AutoMapper.setMinecraftVersion("1.6.2")
 AutoMapper.setForgeVersion("9.10.1.871")
 
