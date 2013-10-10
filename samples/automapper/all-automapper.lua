@@ -27,7 +27,7 @@ local function generateMappingPermutations()
 	for _, v1 in pairs(mappings) do
 		for _, v2 in pairs(mappings) do
 			if (v1 ~= v2) then
-				local entry = {v1, v2, mappingNames[v1] .. "2" .. mappingNames[v2] }
+				local entry = {v1, v2, mappingNames[v1] .. "2" .. mappingNames[v2] .. ".srg" }
 				table.insert(mappingTable, entry)
 			end
 		end
