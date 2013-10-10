@@ -15,6 +15,7 @@
 **      AutoMapper.setCacheDir("/some/cache/directory/")
 **      AutoMapper.setOutputDir("/some/output/directory/")
 **      AutoMapper.setMinecraftVersion("1.6.2")
+**      AutoMapper.setBukkitVersion("1.6.2") [Optional, defaults to Minecraft version]
 **      AutoMapper.setForgeVersion("9.10.1.871") OR AutoMapper.setConfDir("/path/to/mcp/conf/")
 ** 
 **  * Create a table with your desired mappings, with the following format:
@@ -81,6 +82,7 @@ AutoMapper.Inheritance = constantProxy(Inheritance)
 local d_cacheDir
 local d_outDir
 local d_minecraftVersion
+local d_bukkitVersion
 local d_forgeVersion
 local d_confDir
 
@@ -151,6 +153,19 @@ end
 --[[-----------------------------------------------------------------------------
   || API FUNCTION
   ||
+  || AutoMapper.setBukkitVersion(version:string)
+  ||
+  || Sets the desired forge version (x.x.x.x).
+  || The version number must not include the bukkit version.
+--]]-----------------------------------------------------------------------------
+function AutoMapper.setBukkitVersion(version)
+	assert(version ~= nil)
+	d_bukkitVersion = version
+end
+
+--[[-----------------------------------------------------------------------------
+  || API FUNCTION
+  ||
   || AutoMapper.setConfDir(dir:string)
   ||
   || Sets the MCP conf directory.
@@ -172,6 +187,11 @@ end
   || Throws an error if any setting is missing.
 --]]-------------------------------------------------------------------
 local function verifySettings()
+    if (d_bukkitVersion == nil) then
+        print("Defaulting Bukkit version to " .. d_minecraftVersion)
+        d_bukkitVersion = d_minecraftVersion
+    end
+
 	if (d_cacheDir == nil) then
 		error("Please set the cache directory before generating mappings.")
 	elseif (d_outDir == nil) then
@@ -403,11 +423,11 @@ local function downloadJars(requiredFiles)
 	end
 	
 	if (requiredFiles.bukkit) then
-		d_bukkitJar = string.format("%sbukkit_%s.jar", d_cacheDir, d_minecraftVersion)
+		d_bukkitJar = string.format("%sbukkit_%s.jar", d_cacheDir, d_bukkitVersion)
 		
 		if (not fs.exists(d_bukkitJar)) then
 			print("\tDownloading Bukkit server jar...")
-			HTTP.download(string.format("http://repo.bukkit.org/content/repositories/releases/org/bukkit/minecraft-server/%s/minecraft-server-%s.jar", d_minecraftVersion, d_minecraftVersion), d_bukkitJar)
+			HTTP.download(string.format("http://repo.bukkit.org/content/repositories/releases/org/bukkit/minecraft-server/%s/minecraft-server-%s.jar", d_bukkitVersion, d_bukkitVersion), d_bukkitJar)
 		else
 			print("\tUsing cached Bukkit server jar...")
 		end
