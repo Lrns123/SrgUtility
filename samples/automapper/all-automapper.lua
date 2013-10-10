@@ -32,6 +32,8 @@ local function generateMappingPermutations()
 			end
 		end
 	end
+	
+	return mappingTable
 end
 
 AutoMapper.setCacheDir("./cache/")
