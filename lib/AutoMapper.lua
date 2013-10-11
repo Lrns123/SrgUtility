@@ -7,7 +7,7 @@
 **
 **  Usage:
 **
-**  * Execute this script before your own. (i.e. java -jar SrgUtility.jar /path/to/AutoMapper.lua /path/to/your/script.lua)
+**  * Put this script in the library directory (by default ./lib, but can be set using the -l commandline option)
 **
 **  * Load AutoMapper using require("AutoMapper")
 **  
@@ -155,7 +155,7 @@ end
   ||
   || AutoMapper.setBukkitVersion(version:string)
   ||
-  || Sets the desired bukkit version (x.x.x.x).
+  || Sets the desired bukkit version (x.x.x).
 --]]-----------------------------------------------------------------------------
 function AutoMapper.setBukkitVersion(version)
 	assert(version ~= nil)
