@@ -40,9 +40,10 @@ public class SrgUtility
 		OptionParser parser = new OptionParser()
 		{
 			{
-				acceptsAll(asList("?", "help"), "Display help");
-				acceptsAll(asList("v", "version"), "Display version");
-				acceptsAll(asList("d", "debug"), "Enable debug mode");
+				acceptsAll(asList("?", "help"), "Display help.");
+				acceptsAll(asList("v", "version"), "Display version.");
+				acceptsAll(asList("l", "lib-dir"), "Library directory, all lua scripts in this location will be pre-loaded. Defaults to ./lib.").withRequiredArg().ofType(File.class);
+				acceptsAll(asList("d", "debug"), "Enable debug mode.");
 				nonOptions("Lua script(s) to run");
 			}
 		};
@@ -74,6 +75,22 @@ public class SrgUtility
 			else
 			{
 				LuaVM vm = new LuaVM(options.has("d"));
+				
+				File libDir = options.has("l") ? (File)options.valueOf("l") : new File("./lib/");
+				
+				// Load libraries
+				if (libDir.exists() && libDir.isDirectory())
+				{
+					for (File file : libDir.listFiles())
+					{
+						if (!file.isFile() || !file.getName().endsWith(".lua"))
+							continue;
+						
+						vm.loadFile(file);
+					}
+				}
+				
+				// Load user script(s)
 				for (int i = 0; i != count; ++i)
 				{
 					String filename = (String)options.nonOptionArguments().get(i);
