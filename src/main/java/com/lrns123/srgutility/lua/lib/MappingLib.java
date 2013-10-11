@@ -59,13 +59,14 @@ public class MappingLib extends TwoArgFunction
 	private static final int OP_LOADMCP = 1;
 	private static final int OP_COMPAREJARS = 2;
 	private static final int OP_MAKEINHERITANCEMAP = 3;
+	private static final int OP_LOADINHERITANCEMAP = 4;
 
 	@Override
 	public LuaValue call(LuaValue modname, LuaValue env)
 	{
 		LuaTable t = new LuaTable();
 		
-		bind(t, MappingLibV.class, new String[] {"loadSrg", "loadMCP", "compareJars", "makeInheritanceMap"});
+		bind(t, MappingLibV.class, new String[] {"loadSrg", "loadMCP", "compareJars", "makeInheritanceMap", "loadInheritanceMap"});
 
 		env.set("MappingFactory", t);
 		env.get("package").get("loaded").set("MappingFactory", t);
@@ -92,6 +93,9 @@ public class MappingLib extends TwoArgFunction
 		    	case OP_MAKEINHERITANCEMAP:
 		    		// MappingFactory.makeInheritanceMap(inputJar, mapping)
 		    		return makeInheritanceMap(args.arg1().checkjstring(), (SrgMapping)args.arg(2).checkuserdata(SrgMapping.class));
+		    	case OP_LOADINHERITANCEMAP:
+		    		// MappingFactory.loadInheritanceMap(filename[, filename[, filename[, ...]]])
+		    		return loadInheritanceMap(args);
 		    }
 		    return LuaValue.NIL;
 		}
@@ -268,6 +272,37 @@ public class MappingLib extends TwoArgFunction
 		{
 			throw new LuaError(e);
 		}
+	}
+	
+	/**
+	 * Lua Closure for MappingFactory.loadInheritanceMap(filename[, filename[, filename[, ...]]])
+	 * @param filenames The inheritance maps to load.
+	 * @return
+	 */
+	private static final LuaValue loadInheritanceMap(Varargs filenames)
+	{
+		SrgInheritanceMap inheritance = new SrgInheritanceMap();
+		
+		int args = filenames.narg() + 1;
+		for (int i = 1; i != args; ++i)
+		{
+			String filename = filenames.arg(i).checkjstring();
+
+			File file = new File(filename);
+			if (!file.exists())
+				throw new LuaError("File " + filename + " does not exist.");
+
+			try
+			{
+				inheritance.loadMapping(file);
+			}
+			catch (Exception e)
+			{
+				throw new LuaError(e);
+			}
+		}
+		
+		return new LuaUserdata(inheritance, SrgInheritanceMapMeta.getMetaTable());
 	}
 	
 }

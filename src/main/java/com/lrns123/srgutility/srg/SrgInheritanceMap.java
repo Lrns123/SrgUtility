@@ -26,7 +26,9 @@
  */
 package com.lrns123.srgutility.srg;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -78,6 +80,52 @@ public class SrgInheritanceMap
 				inheritanceMap.put(clazz, filteredList);				
 				lookupTable.put(clazz.getQualifiedName(), clazz);
 			}
+		}
+	}
+	
+	public void loadMapping(File inheritFile) throws IOException, IllegalArgumentException
+	{
+		FileReader freader = null;
+		BufferedReader reader = null;
+
+		try
+		{
+			freader = new FileReader(inheritFile);
+			reader = new BufferedReader(freader);
+	
+			String line;
+			while ((line = reader.readLine()) != null)
+			{
+				int commentIndex = line.indexOf('#');
+				if (commentIndex != -1)
+				{
+					line = line.substring(0, commentIndex);
+				}
+	
+				String tokens[] = line.trim().split(" ");
+				
+				if (tokens.length < 2)
+					continue;
+				
+				List<SrgClass> parents = new ArrayList<SrgClass>();
+				
+				SrgClass base = new SrgClass(tokens[0]);
+				
+				for (int i = 1; i < tokens.length; ++i)
+				{
+					parents.add(new SrgClass(tokens[i]));
+				}
+				
+				setParent(base, parents);
+			}
+		}
+		finally
+		{
+			if (reader != null)
+				reader.close();
+			
+			if (freader != null)
+				freader.close();
 		}
 	}
 	
