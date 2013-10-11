@@ -35,6 +35,7 @@ import org.luaj.vm2.lib.jse.JsePlatform;
 import com.lrns123.srgutility.lua.lib.FSLib;
 import com.lrns123.srgutility.lua.lib.HTTPLib;
 import com.lrns123.srgutility.lua.lib.MappingLib;
+import com.lrns123.srgutility.lua.lib.RemapperLib;
 import com.lrns123.srgutility.lua.lib.ZipLib;
 
 
@@ -62,6 +63,7 @@ public class LuaVM
 		}
 		
 		_G.load(new MappingLib());
+		_G.load(new RemapperLib());
 		_G.load(new FSLib());
 		_G.load(new HTTPLib());
 		_G.load(new ZipLib());
