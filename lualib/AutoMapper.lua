@@ -7,7 +7,7 @@
 **
 **  Usage:
 **
-**  * Put this script in the library directory (by default ./lib, but can be set using the -l commandline option)
+**  * Put this script in the library directory (by default ./lualib, but can be set using the -l commandline option)
 **
 **  * Load AutoMapper using require("AutoMapper")
 **  

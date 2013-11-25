@@ -43,7 +43,7 @@ public class SrgUtility
 			{
 				acceptsAll(asList("?", "help"), "Display help.");
 				acceptsAll(asList("v", "version"), "Display version.");
-				acceptsAll(asList("l", "lib-dir"), "Library directory, all lua scripts in this location will be pre-loaded. Defaults to ./lib.").withRequiredArg().ofType(String.class);
+				acceptsAll(asList("l", "lib-dir"), "Library directory, all lua scripts in this location will be pre-loaded. Defaults to ./lualib.").withRequiredArg().ofType(String.class);
 				acceptsAll(asList("d", "debug"), "Enable debug mode.");
 				nonOptions("Lua script(s) to run");
 			}
@@ -75,7 +75,7 @@ public class SrgUtility
 			}
 			else
 			{
-				String libDir = options.has("l") ? (String)options.valueOf("l") : "./lib/";
+				String libDir = options.has("l") ? (String)options.valueOf("l") : "./lualib/";
 				
 				System.setProperty("luaj.package.path", libDir + "/?.lua;?.lua");
 				
