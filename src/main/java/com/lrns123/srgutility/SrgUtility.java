@@ -27,6 +27,7 @@
 package com.lrns123.srgutility;
 
 import java.io.File;
+
 import static java.util.Arrays.asList;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -42,7 +43,7 @@ public class SrgUtility
 			{
 				acceptsAll(asList("?", "help"), "Display help.");
 				acceptsAll(asList("v", "version"), "Display version.");
-				acceptsAll(asList("l", "lib-dir"), "Library directory, all lua scripts in this location will be pre-loaded. Defaults to ./lib.").withRequiredArg().ofType(File.class);
+				acceptsAll(asList("l", "lib-dir"), "Library directory, all lua scripts in this location will be pre-loaded. Defaults to ./lib.").withRequiredArg().ofType(String.class);
 				acceptsAll(asList("d", "debug"), "Enable debug mode.");
 				nonOptions("Lua script(s) to run");
 			}
@@ -74,22 +75,12 @@ public class SrgUtility
 			}
 			else
 			{
+				String libDir = options.has("l") ? (String)options.valueOf("l") : "./lib/";
+				
+				System.setProperty("luaj.package.path", libDir + "/?.lua;?.lua");
+				
 				LuaVM vm = new LuaVM(options.has("d"));
-				
-				File libDir = options.has("l") ? (File)options.valueOf("l") : new File("./lib/");
-				
-				// Load libraries
-				if (libDir.exists() && libDir.isDirectory())
-				{
-					for (File file : libDir.listFiles())
-					{
-						if (!file.isFile() || !file.getName().endsWith(".lua"))
-							continue;
-						
-						vm.loadFile(file);
-					}
-				}
-				
+		
 				// Load user script(s)
 				for (int i = 0; i != count; ++i)
 				{

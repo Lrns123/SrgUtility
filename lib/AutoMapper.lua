@@ -48,7 +48,6 @@
   || Package registration
 --]]-----------------------------------------------------------------------------
 local AutoMapper = {}
-package.loaded["AutoMapper"] = AutoMapper
 
 --[[-----------------------------------------------------------------------------
   || Constants
@@ -706,3 +705,6 @@ function AutoMapper.generate(mappings, inheritance)
 	
 	print("Mapping generation finished.")
 end
+
+-- This is the return value of require("AutoMapper")
+return AutoMapper
