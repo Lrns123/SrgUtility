@@ -62,6 +62,7 @@ public class SrgInheritanceMapMeta extends LibFunction
 
 		bind(metatable, SrgMappingMetaV.class, new String[] { "saveToFile", "clone", "transform"});
 		metatable.set(INDEX, metatable);
+		metatable.set(METATABLE, LuaValue.FALSE);
 	}
 
 	public static final class SrgMappingMetaV extends VarArgFunction

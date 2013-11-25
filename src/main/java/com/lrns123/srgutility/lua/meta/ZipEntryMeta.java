@@ -60,6 +60,7 @@ public class ZipEntryMeta extends LibFunction
 
 		bind(metatable, ZipEntryMetaV.class, new String[] { "getComment", "getCompressedSize", "getCRC", "getExtra", "getMethod", "getName", "getSize", "getTime", "isDirectory" });
 		metatable.set(INDEX, metatable);
+		metatable.set(METATABLE, LuaValue.FALSE);
 	}
 
 	public static final class ZipEntryMetaV extends VarArgFunction

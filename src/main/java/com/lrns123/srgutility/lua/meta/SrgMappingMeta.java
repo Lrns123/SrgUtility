@@ -64,6 +64,7 @@ public class SrgMappingMeta extends LibFunction
 
 		bind(metatable, SrgMappingMetaV.class, new String[] { "saveToFile", "clone", "reverse", "identity", "transform", "filter" });
 		metatable.set(INDEX, metatable);
+		metatable.set(METATABLE, LuaValue.FALSE);
 	}
 
 	public static final class SrgMappingMetaV extends VarArgFunction

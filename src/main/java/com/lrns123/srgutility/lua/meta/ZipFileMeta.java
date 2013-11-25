@@ -68,6 +68,7 @@ public class ZipFileMeta extends LibFunction
 
 		bind(metatable, ZipFileMetaV.class, new String[] { "close", "entries", "getEntry", "getName", "size", "readAll", "extract", "__gc" });
 		metatable.set(INDEX, metatable);
+		metatable.set(METATABLE, LuaValue.FALSE);
 	}
 
 	public static final class ZipFileMetaV extends VarArgFunction
