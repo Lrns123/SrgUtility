@@ -83,7 +83,7 @@ public class SrgTypeDescriptor
 	
 	public String getQualifiedName()
 	{
-		StringBuilder builder = new StringBuilder();
+		StringBuilder builder = new StringBuilder(arrayDepth + 1 + (type == Type.OBJECT ? 1 + classType.getQualifiedName().length() : 0) );
 		
 		for (int i = 0; i < arrayDepth; i++)
 		{

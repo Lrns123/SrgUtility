@@ -26,7 +26,7 @@
  */
 package com.lrns123.srgutility.srg;
 
-import com.lrns123.srgutility.util.RegexUtil;
+import com.lrns123.srgutility.util.ParseUtil;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -47,25 +47,10 @@ public class SrgClass
 	 */
 	public SrgClass(String qualifiedName)
 	{
-		String[] parts = RegexUtil.parseJavaIdentifiers(qualifiedName);
+		String[] parts = ParseUtil.splitFQN(qualifiedName);
 		
-		if (parts.length < 1)
-		{
-			throw new IllegalArgumentException("Invalid srg indentifier: " + qualifiedName);
-		}
-		className = parts[parts.length - 1];
-		
-		StringBuilder packageBuilder = new StringBuilder();
-		
-		for (int i = 0; i < parts.length - 1; i++)
-		{
-			if (i != 0)
-				packageBuilder.append('/');
-			packageBuilder.append(parts[i]);
-		}
-		
-		
-		packageName = packageBuilder.toString();
+		className = parts[1];
+		packageName = parts[0];
 	}
 	
 	/**

@@ -26,7 +26,7 @@
  */
 package com.lrns123.srgutility.srg;
 
-import com.lrns123.srgutility.util.RegexUtil;
+import com.lrns123.srgutility.util.ParseUtil;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -44,26 +44,11 @@ public class SrgField
 	
 	public SrgField(String qualifiedName)
 	{
-		String[] parts = RegexUtil.parseJavaIdentifiers(qualifiedName);
-		
-		if (parts.length < 2)
-		{
-			throw new IllegalArgumentException("Invalid qualified name");
-		}
-		fieldName = parts[parts.length - 1];
-		className = parts[parts.length - 2];
-		
-		StringBuilder packageBuilder = new StringBuilder();
-		
-		for (int i = 0; i < parts.length - 2; i++)
-		{
-			if (i != 0)
-				packageBuilder.append('/');
-			packageBuilder.append(parts[i]);
-		}
-		
-		
-		packageName = packageBuilder.toString();
+		String[] parts = ParseUtil.splitFQMN(qualifiedName);
+
+		fieldName = parts[2];
+		className = parts[1];		
+		packageName = parts[0];
 	}
 	
 	public String getQualifiedName()

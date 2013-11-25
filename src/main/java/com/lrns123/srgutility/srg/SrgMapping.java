@@ -56,14 +56,6 @@ public class SrgMapping
 	private Map<SrgMethod, SrgMethod> methodMapping = new HashMap<SrgMethod, SrgMethod>();
 
 	/**
-	 * Mapping lookup table. Contains input signature -> input class. The input
-	 * class can be used in the mapping tables to find the corresponding entry.
-	 */
-	private Map<String, SrgClass> classLookup = new HashMap<String, SrgClass>();
-	private Map<String, SrgField> fieldLookup = new HashMap<String, SrgField>();
-	private Map<String, SrgMethod> methodLookup = new HashMap<String, SrgMethod>();
-
-	/**
 	 * Adds a class mapping to the mapping tables.
 	 * 
 	 * @param input
@@ -71,14 +63,8 @@ public class SrgMapping
 	 */
 	public void addClassMapping(SrgClass input, SrgClass output)
 	{
-		if (classLookup.containsKey(input.getQualifiedName()))
-		{
-			System.out.println("Duplicate class entry for " + input.getQualifiedName() + "... Ignoring");
-			return;
-		}
-		
-		classMapping.put(input, output);
-		classLookup.put(input.getQualifiedName(), input);
+		if (classMapping.put(input, output) != null)
+			System.out.println("Duplicate class entry for " + input.getQualifiedName() + "!");
 	}
 
 	/**
@@ -89,14 +75,9 @@ public class SrgMapping
 	 */
 	public void addFieldMapping(SrgField input, SrgField output)
 	{
-		if (fieldLookup.containsKey(input.getQualifiedName()))
-		{
-			System.out.println("Duplicate field entry for " + input.getQualifiedName() + "... Ignoring");
-			return;
-		}
+		if (fieldMapping.put(input, output) != null)
+			System.out.println("Duplicate field entry for " + input.getQualifiedName() + "!");
 		
-		fieldMapping.put(input, output);
-		fieldLookup.put(input.getQualifiedName(), input);
 	}
 
 	/**
@@ -107,14 +88,9 @@ public class SrgMapping
 	 */
 	public void addMethodMapping(SrgMethod input, SrgMethod output)
 	{
-		if (methodLookup.containsKey(input.getQualifiedName()))
-		{
-			System.out.println("Duplicate method entry for " + input.getQualifiedName() + "... Ignoring");
-			return;
-		}
+		if (methodMapping.put(input, output) != null)
+			System.out.println("Duplicate method entry for " + input.getQualifiedName() + "!");
 		
-		methodMapping.put(input, output);
-		methodLookup.put(input.getQualifiedName(), input);
 	}
 
 	/**
@@ -176,10 +152,6 @@ public class SrgMapping
 		this.fieldMapping = temp.fieldMapping;
 		this.methodMapping = temp.methodMapping;
 
-		this.classLookup = temp.classLookup;
-		this.fieldLookup = temp.fieldLookup;
-		this.methodLookup = temp.methodLookup;
-
 		return this;
 	}
 
@@ -235,10 +207,6 @@ public class SrgMapping
 		this.fieldMapping = temp.fieldMapping;
 		this.methodMapping = temp.methodMapping;
 
-		this.classLookup = temp.classLookup;
-		this.fieldLookup = temp.fieldLookup;
-		this.methodLookup = temp.methodLookup;
-
 		return this;
 	}	
 	
@@ -271,11 +239,7 @@ public class SrgMapping
 		this.classMapping = temp.classMapping;
 		this.fieldMapping = temp.fieldMapping;
 		this.methodMapping = temp.methodMapping;
-
-		this.classLookup = temp.classLookup;
-		this.fieldLookup = temp.fieldLookup;
-		this.methodLookup = temp.methodLookup;
-
+		
 		return this;
 	}
 	
@@ -291,7 +255,7 @@ public class SrgMapping
 
 		for (Entry<SrgClass, SrgClass> entry : classMapping.entrySet())
 		{
-			if (filter.getClassMapping(entry.getKey().getQualifiedName()) != null)
+			if (filter.getClassMapping(entry.getKey()) != null)
 			{
 				temp.addClassMapping(entry.getKey(), entry.getValue());
 			}
@@ -299,7 +263,7 @@ public class SrgMapping
 
 		for (Entry<SrgField, SrgField> entry : fieldMapping.entrySet())
 		{
-			if (filter.getFieldMapping(entry.getKey().getQualifiedName()) != null)
+			if (filter.getFieldMapping(entry.getKey()) != null)
 			{
 				temp.addFieldMapping(entry.getKey(), entry.getValue());
 			}
@@ -307,7 +271,7 @@ public class SrgMapping
 
 		for (Entry<SrgMethod, SrgMethod> entry : methodMapping.entrySet())
 		{
-			if (filter.getMethodMapping(entry.getKey().getQualifiedName()) != null)
+			if (filter.getMethodMapping(entry.getKey()) != null)
 			{
 				temp.addMethodMapping(entry.getKey(), entry.getValue());
 			}
@@ -319,10 +283,6 @@ public class SrgMapping
 		this.classMapping = temp.classMapping;
 		this.fieldMapping = temp.fieldMapping;
 		this.methodMapping = temp.methodMapping;
-
-		this.classLookup = temp.classLookup;
-		this.fieldLookup = temp.fieldLookup;
-		this.methodLookup = temp.methodLookup;
 
 		return this;
 	}
@@ -443,18 +403,12 @@ public class SrgMapping
 	
 	public SrgClass getClassMapping(SrgClass input)
 	{
-		return getClassMapping(input.getQualifiedName());
+		return classMapping.get(input);
 	}
 	
 	public SrgClass getClassMapping(String inputSignature)
 	{
-		SrgClass mapEntry = classLookup.get(inputSignature);
-		if (mapEntry != null)
-		{
-			return classMapping.get(mapEntry);
-		}
-		
-		return null;
+		return classMapping.get(new SrgClass(inputSignature));
 	}
 	
 	public Map<SrgClass, SrgClass> getClassMappings()
@@ -464,18 +418,12 @@ public class SrgMapping
 	
 	public SrgField getFieldMapping(SrgField input)
 	{
-		return getFieldMapping(input.getQualifiedName());
+		return fieldMapping.get(input);
 	}
 	
 	public SrgField getFieldMapping(String inputSignature)
 	{
-		SrgField mapEntry = fieldLookup.get(inputSignature);
-		if (mapEntry != null)
-		{
-			return fieldMapping.get(mapEntry);
-		}
-		
-		return null;
+		return fieldMapping.get(new SrgField(inputSignature));
 	}
 	
 	public Map<SrgField, SrgField> getFieldMappings()
@@ -485,18 +433,12 @@ public class SrgMapping
 	
 	public SrgMethod getMethodMapping(SrgMethod input)
 	{
-		return getMethodMapping(input.getQualifiedName());
+		return methodMapping.get(input);
 	}
 	
 	public SrgMethod getMethodMapping(String inputSignature)
 	{
-		SrgMethod mapEntry = methodLookup.get(inputSignature);
-		if (mapEntry != null)
-		{
-			return methodMapping.get(mapEntry);
-		}
-		
-		return null;
+		return methodMapping.get(new SrgMethod(inputSignature));
 	}
 	
 	public Map<SrgMethod, SrgMethod> getMethodMappings()

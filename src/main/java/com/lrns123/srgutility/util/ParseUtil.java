@@ -26,25 +26,66 @@
  */
 package com.lrns123.srgutility.util;
 
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-public class RegexUtil
+public class ParseUtil
 {
-	private static Pattern javaIdentifierPattern = Pattern.compile("(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)+");
-	
-	public static String[] parseJavaIdentifiers(String identifier)
+	/**
+	 * Splits a fully qualified classname into its package and class.
+	 * 
+	 * Warning: Calling this function again invalidates previously returned values.
+	 * 
+	 * @param identifier The fully qualified (binary) name of the class.
+	 * @return A string array containing the package and class
+	 */
+	public static String[] splitFQN(String identifier)
 	{
-		ArrayList<String> components = new ArrayList<String>();
+		String[] ret = new String[2];
 		
-		Matcher matcher = javaIdentifierPattern.matcher(identifier);
+		int idx = identifier.lastIndexOf('/');
 		
-		while (matcher.find())
+		if (idx == -1)
 		{
-			components.add(matcher.group());
+			ret[0] = "";
+			ret[1] = identifier;
+		}
+		else
+		{
+			ret[1] = identifier.substring(idx + 1);
+			ret[0] = identifier.substring(0, idx);
 		}
 		
-		return components.toArray(new String[0]);
+		return ret;
+	}
+	
+	/**
+	 * Splits a fully qualified member name into its package, class and member.
+	 * 
+	 * Warning: Calling this function again invalidates previously returned values.
+	 * 
+	 * @param identifier The fully qualified (binary) name of the class.
+	 * @return A string array containing the package and class
+	 */
+	public static String[] splitFQMN(String identifier)
+	{		
+		int idx = identifier.lastIndexOf('/');
+		if (idx == -1)
+			throw new IllegalArgumentException("Malformed FQN");
+		
+		String[] ret = new String[3];
+		
+		ret[2] = identifier.substring(idx + 1);
+	
+		int idx2 = identifier.lastIndexOf('/', idx - 1);
+		if (idx2 == -1)
+		{
+			ret[0] = "";
+			ret[1] = identifier.substring(0, idx);
+		}
+		else
+		{
+			ret[0] = identifier.substring(0, idx2);
+			ret[1] = identifier.substring(idx2 + 1, idx);
+		}
+		
+		return ret;
 	}
 }

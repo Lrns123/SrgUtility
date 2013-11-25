@@ -29,7 +29,7 @@ package com.lrns123.srgutility.srg;
 import java.util.ArrayList;
 
 import com.lrns123.srgutility.srg.SrgTypeDescriptor.Type;
-import com.lrns123.srgutility.util.RegexUtil;
+import com.lrns123.srgutility.util.ParseUtil;
 
 import lombok.Data;
 
@@ -45,28 +45,28 @@ public class SrgMethod
 	private ArrayList<SrgTypeDescriptor> arguments = new ArrayList<SrgTypeDescriptor>();
 	private SrgTypeDescriptor returnType;
 	
+	public SrgMethod(String qualifiedNameAndDescriptor)
+	{
+		int idx = qualifiedNameAndDescriptor.indexOf(' ');
+		if (idx == -1)
+			throw new IllegalArgumentException("Invalid method descriptor");
+		
+		String[] parts = ParseUtil.splitFQMN(qualifiedNameAndDescriptor.substring(0, idx - 1));
+		
+		methodName = parts[2];
+		className = parts[1];
+		packageName = parts[0];
+		
+		parseMethodDescriptor(qualifiedNameAndDescriptor.substring(idx + 1));
+	}
+	
 	public SrgMethod(String qualifiedName, String methodDescriptor)
 	{
-		String[] parts = RegexUtil.parseJavaIdentifiers(qualifiedName);
+		String[] parts = ParseUtil.splitFQMN(qualifiedName);
 		
-		if (parts.length < 2)
-		{
-			throw new IllegalArgumentException("Invalid srg indentifier");
-		}
-		methodName = parts[parts.length - 1];
-		className = parts[parts.length - 2];
-		
-		StringBuilder packageBuilder = new StringBuilder();
-		
-		for (int i = 0; i < parts.length - 2; i++)
-		{
-			if (i != 0)
-				packageBuilder.append('/');
-			packageBuilder.append(parts[i]);
-		}
-		
-		
-		packageName = packageBuilder.toString();
+		methodName = parts[2];
+		className = parts[1];
+		packageName = parts[0];
 		
 		parseMethodDescriptor(methodDescriptor);
 	}

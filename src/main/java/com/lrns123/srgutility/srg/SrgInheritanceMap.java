@@ -47,7 +47,6 @@ import net.md_5.specialsource.provider.InheritanceProvider;
 public class SrgInheritanceMap
 {
 	private Map<SrgClass, List<SrgClass>> inheritanceMap = new HashMap<SrgClass, List<SrgClass>>();
-	private Map<String, SrgClass> lookupTable = new HashMap<String, SrgClass>();
 
 	public SrgInheritanceMap()
 	{
@@ -78,7 +77,6 @@ public class SrgInheritanceMap
 			if (!filteredList.isEmpty())
 			{
 				inheritanceMap.put(clazz, filteredList);				
-				lookupTable.put(clazz.getQualifiedName(), clazz);
 			}
 		}
 	}
@@ -132,7 +130,6 @@ public class SrgInheritanceMap
 	public void setParent(SrgClass clazz, List<SrgClass> parents)
 	{
 		inheritanceMap.put(clazz, parents);
-		lookupTable.put(clazz.getQualifiedName(), clazz);
 	}
 	
 	public List<SrgClass> getParent(SrgClass clazz)
@@ -142,8 +139,7 @@ public class SrgInheritanceMap
 	
 	public List<SrgClass> getParent(String className)
 	{
-		SrgClass clazz = lookupTable.get(className);
-		return clazz != null ? inheritanceMap.get(clazz) : null;
+		return inheritanceMap.get(new SrgClass(className));
 	}
 	
 	public Map<SrgClass, List<SrgClass>> getInheritanceMap()
