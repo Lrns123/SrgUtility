@@ -287,34 +287,51 @@ public class SrgMapping
 		return this;
 	}
 	
+	// Optimized split function for faster parsing.
+	private static int fastSplit(String input, String[] array, char delimiter)
+	{
+		int off = 0;
+        int next = 0;
+        int idx = 0;
+  
+        while ((next = input.indexOf(delimiter, off)) != -1)
+        {
+        	if (idx == array.length)
+        		return idx;
+        	
+        	array[idx++] = input.substring(off, next);
+        	
+        	off = next + 1;
+        }
+        
+        if (idx != array.length)
+        {
+        	array[idx++] = input.substring(off);
+        }
+        
+        return idx;
+	}
 	
 	public void loadMapping(File srgFile) throws IOException, IllegalArgumentException
 	{
-		FileReader freader = null;
 		BufferedReader reader = null;
 
 		try
 		{
-			freader = new FileReader(srgFile);
-			reader = new BufferedReader(freader);
-	
+			reader = new BufferedReader(new FileReader(srgFile));
+			String tokens[] = new String[5];
 			String line;
+			
 			while ((line = reader.readLine()) != null)
 			{
-				int commentIndex = line.indexOf('#');
-				if (commentIndex != -1)
-				{
-					line = line.substring(0, commentIndex);
-				}
-	
-				String tokens[] = line.trim().split(" ");
+				int numTokens = fastSplit(line, tokens, ' ');
 				
-				if (tokens.length < 1)
+				if (numTokens == 0)
 					continue;
-				
+								
 				if (tokens[0].equals("CL:"))
 				{
-					if (tokens.length < 3)
+					if (numTokens < 3)
 						throw new IllegalArgumentException("Invalid CL entry found in srg: " + line);
 					
 					SrgClass input = new SrgClass(tokens[1]);
@@ -324,7 +341,7 @@ public class SrgMapping
 				}
 				else if (tokens[0].equals("FD:"))
 				{
-					if (tokens.length < 3)
+					if (numTokens < 3)
 						throw new IllegalArgumentException("Invalid FD entry found in srg: " + line);
 					
 					SrgField input = new SrgField(tokens[1]);
@@ -334,7 +351,7 @@ public class SrgMapping
 				}
 				else if (tokens[0].equals("MD:"))
 				{
-					if (tokens.length < 5)
+					if (numTokens < 5)
 						throw new IllegalArgumentException("Invalid MD entry found in srg: " + line);
 					
 					SrgMethod input = new SrgMethod(tokens[1], tokens[2]);
@@ -348,9 +365,6 @@ public class SrgMapping
 		{
 			if (reader != null)
 				reader.close();
-			
-			if (freader != null)
-				freader.close();
 		}
 	}
 	
