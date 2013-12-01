@@ -86,7 +86,7 @@ public class HTTPLib extends TwoArgFunction
 		    		return setUserAgent(args.arg1().isnil() ? null : args.arg1().checkjstring());
 		    	
 		    }
-		    return LuaValue.NIL;
+		    return LuaValue.NONE;
 		}
 	}
 	
@@ -199,7 +199,7 @@ public class HTTPLib extends TwoArgFunction
             dlStream.close();
             outStream.close();
 			
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		}
 		catch (Exception e)
 		{
@@ -210,7 +210,7 @@ public class HTTPLib extends TwoArgFunction
 	private static LuaValue setUserAgent(String agentArg)
 	{
 		userAgent = agentArg;
-		return LuaValue.NIL;
+		return LuaValue.NONE;
 	}
 	
 }

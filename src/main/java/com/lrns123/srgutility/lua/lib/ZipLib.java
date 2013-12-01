@@ -66,9 +66,8 @@ public class ZipLib extends TwoArgFunction
 		    	case OP_OPEN:
 		    		// zip.open(filename)
 		    		return open(args.arg1().checkjstring());
-		    	
 		    }
-		    return LuaValue.NIL;
+		    return LuaValue.NONE;
 		}
 	}
 	

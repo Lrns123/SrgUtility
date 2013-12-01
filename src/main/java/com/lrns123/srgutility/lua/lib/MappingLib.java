@@ -97,7 +97,7 @@ public class MappingLib extends TwoArgFunction
 		    		// MappingFactory.loadInheritanceMap(filename[, filename[, filename[, ...]]])
 		    		return loadInheritanceMap(args);
 		    }
-		    return LuaValue.NIL;
+		    return LuaValue.NONE;
 		}
 	}
 

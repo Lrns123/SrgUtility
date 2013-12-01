@@ -91,7 +91,7 @@ public class ZipEntryMeta extends LibFunction
 				case OP_ISDIRECTORY:
 					return LuaValue.valueOf(entry.isDirectory());
 			}
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		}
 	}
 }

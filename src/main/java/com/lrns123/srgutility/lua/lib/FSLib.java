@@ -103,7 +103,7 @@ public class FSLib extends TwoArgFunction
 		    		// fs.combine(root, path)
 		    		return combine(args.arg1().checkjstring(), args.arg(2).checkjstring());
 		    }
-		    return LuaValue.NIL;
+		    return LuaValue.NONE;
 		}
 	}
 	
@@ -113,7 +113,7 @@ public class FSLib extends TwoArgFunction
 		
 		String[] fileList = dir.list();
 		if (fileList == null)
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		
 		LuaTable fileTable = new LuaTable();
 		for (int i = 0; i != fileList.length; ++i)
@@ -158,7 +158,7 @@ public class FSLib extends TwoArgFunction
 	{
 		copy(source, destination);
 		delete(source);		
-		return LuaValue.NIL;
+		return LuaValue.NONE;
 	}
 	
 	private static LuaValue copy(String source, String destination)
@@ -220,7 +220,7 @@ public class FSLib extends TwoArgFunction
 			}
 		}
 		
-		return LuaValue.NIL;
+		return LuaValue.NONE;
 	}
 	
 	private static LuaValue delete(String path)

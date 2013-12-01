@@ -84,7 +84,7 @@ public class SrgInheritanceMapMeta extends LibFunction
 					// mapping:transform(transformer)
 					return transform(instance, getTransformerFromArg(args.arg(2)));
 			}
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		}
 	}
 
@@ -93,7 +93,7 @@ public class SrgInheritanceMapMeta extends LibFunction
 		try
 		{
 			instance.write(new File(filename));
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		}
 		catch (Exception e)
 		{

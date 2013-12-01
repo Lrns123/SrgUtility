@@ -72,7 +72,7 @@ public class RemapperLib extends TwoArgFunction
 		    		// Remapper.remapJar(inJar, outJar, mapping, inheritance)
 		    		return remapJar(new File(args.arg(1).checkjstring()), new File(args.arg(2).checkjstring()), (SrgMapping)args.arg(3).checkuserdata(SrgMapping.class), (SrgInheritanceMap)args.arg(4).optuserdata(SrgInheritanceMap.class, null));
 		    }
-		    return LuaValue.NIL;
+		    return LuaValue.NONE;
 		}
 	}
 
@@ -98,6 +98,6 @@ public class RemapperLib extends TwoArgFunction
         	throw new LuaError(e);
         }
 		
-		return LuaValue.NIL;
+		return LuaValue.NONE;
 	}
 }

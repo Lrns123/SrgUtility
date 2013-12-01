@@ -95,7 +95,7 @@ public class SrgMappingMeta extends LibFunction
 					// mapping:filter(filterSrg)
 					return filter(instance, (SrgMapping)args.arg(2).checkuserdata(SrgMapping.class));
 			}
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		}
 	}
 
@@ -104,7 +104,7 @@ public class SrgMappingMeta extends LibFunction
 		try
 		{
 			instance.write(new File(filename));
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		}
 		catch (Exception e)
 		{

@@ -105,7 +105,7 @@ public class ZipFileMeta extends LibFunction
 					// __gc
 					return close(instance);
 			}
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		}
 	}
 
@@ -114,7 +114,7 @@ public class ZipFileMeta extends LibFunction
 		try
 		{
 			instance.close();
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		}
 		catch (Exception e)
 		{
@@ -142,7 +142,7 @@ public class ZipFileMeta extends LibFunction
 		ZipEntry entry = instance.getEntry(path);
 		
 		if (entry == null)
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		else
 			return new LuaUserdata(entry, ZipEntryMeta.getMetaTable());
 	}
@@ -189,7 +189,7 @@ public class ZipFileMeta extends LibFunction
 			inStream.close();
 			outStream.close();
 			
-			return LuaValue.NIL;
+			return LuaValue.NONE;
 		}
 		catch (Exception e)
 		{
