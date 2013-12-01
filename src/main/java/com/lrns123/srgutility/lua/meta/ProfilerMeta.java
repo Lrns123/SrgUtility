@@ -24,60 +24,65 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.lrns123.srgutility.lua;
+package com.lrns123.srgutility.lua.meta;
 
-import java.io.File;
-import java.io.FileInputStream;
+import org.luaj.vm2.LuaTable;
+import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.LibFunction;
+import org.luaj.vm2.lib.VarArgFunction;
 
-import org.luaj.vm2.Globals;
-import org.luaj.vm2.lib.jse.JsePlatform;
+import com.lrns123.srgutility.lua.util.Profiler;
 
-import com.lrns123.srgutility.lua.lib.FSLib;
-import com.lrns123.srgutility.lua.lib.HTTPLib;
-import com.lrns123.srgutility.lua.lib.MappingLib;
-import com.lrns123.srgutility.lua.lib.ProfilerLib;
-import com.lrns123.srgutility.lua.lib.RemapperLib;
-import com.lrns123.srgutility.lua.lib.ZipLib;
-
-
-/**
- * Lua Virtual Machine
- */
-public class LuaVM
+public class ProfilerMeta extends LibFunction
 {
-	private Globals _G;
-	
-	public LuaVM()
-	{		
-		this(false);
-	}
-	
-	public LuaVM(boolean debug)
-	{	
-		_G = debug ? JsePlatform.debugGlobals() : JsePlatform.standardGlobals();
+	private static LuaTable metatable;
 
-		// Global libraries
-		_G.load(new MappingLib());
-		_G.load(new RemapperLib());
-		_G.load(new FSLib());
-		_G.load(new HTTPLib());
-		_G.load(new ZipLib());
-		
-		// Load-on-demand libraries
-		_G.load(new ProfilerLib());
-		
-	}
+	private static final int OP_START = 0;
+	private static final int OP_STOP = 1;
+	private static final int OP_GETSEC = 2;
+	private static final int OP_GETMSEC = 3;
+	private static final int OP_GETNSEC = 4;
 	
-	public void loadFile(File file)
+	public static LuaTable getMetaTable()
 	{
-		try
+		if (metatable == null)
+			new ProfilerMeta();
+		return metatable;
+	}
+
+	private ProfilerMeta()
+	{
+		metatable = new LuaTable();
+
+		bind(metatable, ZipEntryMetaV.class, new String[] { "start", "stop", "getSec", "getMSec", "getNSec" });
+		metatable.set(INDEX, metatable);
+		metatable.set(METATABLE, LuaValue.FALSE);
+	}
+
+	public static final class ZipEntryMetaV extends VarArgFunction
+	{
+		@Override
+		public Varargs invoke(Varargs args)
 		{
-			_G.compiler.load(new FileInputStream(file), file.getName(), _G).call();
-		}
-		catch (Exception e)
-		{
-			System.out.println("Could not execute file " + file.getAbsolutePath() + ": " + e.getLocalizedMessage());
-			e.printStackTrace();
+			Profiler entry = (Profiler)args.arg1().checkuserdata(Profiler.class);
+			
+			switch (opcode)
+			{
+				case OP_START:
+					entry.start();
+					return LuaValue.NONE;
+				case OP_STOP:
+					entry.stop();
+					return LuaValue.NONE;
+				case OP_GETSEC:
+					return LuaValue.valueOf(entry.getSec());
+				case OP_GETMSEC:
+					return LuaValue.valueOf(entry.getMSec());
+				case OP_GETNSEC:
+					return LuaValue.valueOf(entry.getNSec());
+			}
+			return LuaValue.NONE;
 		}
 	}
 }

@@ -24,60 +24,41 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.lrns123.srgutility.lua;
+package com.lrns123.srgutility.lua.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-
-import org.luaj.vm2.Globals;
-import org.luaj.vm2.lib.jse.JsePlatform;
-
-import com.lrns123.srgutility.lua.lib.FSLib;
-import com.lrns123.srgutility.lua.lib.HTTPLib;
-import com.lrns123.srgutility.lua.lib.MappingLib;
-import com.lrns123.srgutility.lua.lib.ProfilerLib;
-import com.lrns123.srgutility.lua.lib.RemapperLib;
-import com.lrns123.srgutility.lua.lib.ZipLib;
-
-
-/**
- * Lua Virtual Machine
- */
-public class LuaVM
+public class Profiler
 {
-	private Globals _G;
+	private boolean running = false;
+	private long startTime = System.nanoTime();
+	private long endTime = System.nanoTime();
 	
-	public LuaVM()
-	{		
-		this(false);
-	}
-	
-	public LuaVM(boolean debug)
-	{	
-		_G = debug ? JsePlatform.debugGlobals() : JsePlatform.standardGlobals();
-
-		// Global libraries
-		_G.load(new MappingLib());
-		_G.load(new RemapperLib());
-		_G.load(new FSLib());
-		_G.load(new HTTPLib());
-		_G.load(new ZipLib());
-		
-		// Load-on-demand libraries
-		_G.load(new ProfilerLib());
-		
-	}
-	
-	public void loadFile(File file)
+	public void start()
 	{
-		try
-		{
-			_G.compiler.load(new FileInputStream(file), file.getName(), _G).call();
-		}
-		catch (Exception e)
-		{
-			System.out.println("Could not execute file " + file.getAbsolutePath() + ": " + e.getLocalizedMessage());
-			e.printStackTrace();
-		}
+		startTime = System.nanoTime();
+		running = true;
+	}
+	
+	public void stop()
+	{
+		endTime = System.nanoTime();
+		running = false;
+	}
+	
+	public double getSec()
+	{
+		return (double)getNSec() / 1000000000.0;
+	}
+	
+	public double getMSec()
+	{
+		return (double)getNSec() / 1000000.0;
+	}
+	
+	public long getNSec()
+	{
+		if (running)
+			endTime = System.nanoTime();
+		
+		return (endTime - startTime);
 	}
 }

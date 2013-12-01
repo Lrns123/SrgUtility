@@ -24,60 +24,54 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.lrns123.srgutility.lua;
+package com.lrns123.srgutility.lua.lib;
 
-import java.io.File;
-import java.io.FileInputStream;
+import org.luaj.vm2.LuaTable;
+import org.luaj.vm2.LuaUserdata;
+import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.TwoArgFunction;
+import org.luaj.vm2.lib.VarArgFunction;
 
-import org.luaj.vm2.Globals;
-import org.luaj.vm2.lib.jse.JsePlatform;
+import com.lrns123.srgutility.lua.meta.ProfilerMeta;
+import com.lrns123.srgutility.lua.util.Profiler;
 
-import com.lrns123.srgutility.lua.lib.FSLib;
-import com.lrns123.srgutility.lua.lib.HTTPLib;
-import com.lrns123.srgutility.lua.lib.MappingLib;
-import com.lrns123.srgutility.lua.lib.ProfilerLib;
-import com.lrns123.srgutility.lua.lib.RemapperLib;
-import com.lrns123.srgutility.lua.lib.ZipLib;
-
-
-/**
- * Lua Virtual Machine
- */
-public class LuaVM
+public class ProfilerLib extends TwoArgFunction
 {
-	private Globals _G;
-	
-	public LuaVM()
-	{		
-		this(false);
-	}
-	
-	public LuaVM(boolean debug)
-	{	
-		_G = debug ? JsePlatform.debugGlobals() : JsePlatform.standardGlobals();
+	private static final int OP_CREATE = 0;
 
-		// Global libraries
-		_G.load(new MappingLib());
-		_G.load(new RemapperLib());
-		_G.load(new FSLib());
-		_G.load(new HTTPLib());
-		_G.load(new ZipLib());
+	@Override
+	public LuaValue call(LuaValue modname, LuaValue env)
+	{
+		LuaTable t = new LuaTable();
 		
-		// Load-on-demand libraries
-		_G.load(new ProfilerLib());
-		
+		bind(t, ProfilerLibV.class, new String[] {"create"});
+
+		env.get("package").get("loaded").set("profiler", t);
+
+		return t;
 	}
 	
-	public void loadFile(File file)
+	public static final class ProfilerLibV extends VarArgFunction
 	{
-		try
+		@Override
+		public Varargs invoke(Varargs args)
 		{
-			_G.compiler.load(new FileInputStream(file), file.getName(), _G).call();
+		    switch (opcode)
+		    {
+		    	case OP_CREATE:
+		    		// profiler.create()
+		    		return create();
+		    }
+		    return LuaValue.NONE;
 		}
-		catch (Exception e)
-		{
-			System.out.println("Could not execute file " + file.getAbsolutePath() + ": " + e.getLocalizedMessage());
-			e.printStackTrace();
-		}
+	}
+	
+	private static LuaValue create()
+	{
+		Profiler profiler = new Profiler();
+		
+		return new LuaUserdata(profiler, ProfilerMeta.getMetaTable());
 	}
 }
+
