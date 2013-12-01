@@ -46,17 +46,17 @@ public final class JarMappingAdapter
 	{
 		JarMapping outMapping = new JarMapping();
 		
-		for (Entry<SrgClass, SrgClass> entry : mapping.getClassMappings().entrySet())
+		for (Entry<SrgClass, SrgClass> entry : mapping.getClassMapping().entrySet())
 		{
 			outMapping.classes.put(entry.getKey().getQualifiedName(), entry.getValue().getQualifiedName());
 		}
 		
-		for (Entry<SrgField, SrgField> entry : mapping.getFieldMappings().entrySet())
+		for (Entry<SrgField, SrgField> entry : mapping.getFieldMapping().entrySet())
 		{
 			outMapping.fields.put(entry.getKey().getQualifiedName(), entry.getValue().getFieldName());
 		}
 		
-		for (Entry<SrgMethod, SrgMethod> entry : mapping.getMethodMappings().entrySet())
+		for (Entry<SrgMethod, SrgMethod> entry : mapping.getMethodMapping().entrySet())
 		{
 			outMapping.methods.put(entry.getKey().getQualifiedName(), entry.getValue().getMethodName());
 		}

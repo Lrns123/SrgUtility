@@ -26,12 +26,13 @@
  */
 package com.lrns123.srgutility.srg;
 
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 /**
  * Represents a type descriptor.
  */
-@Data
+@EqualsAndHashCode
 public class SrgTypeDescriptor
 {
 	public enum Type
@@ -48,9 +49,10 @@ public class SrgTypeDescriptor
 		VOID		// V
 	}
 	
-	private Type type;
-	private int arrayDepth = 0;
-	private SrgClass classType;
+	@Getter private final Type type;
+	@Getter private final int arrayDepth;
+	@Getter private final SrgClass classType;
+	@Getter private final String qualifiedName;
 
 	/**
 	 * Constructs a new SrgTypeDescriptor. Use for every type *except* Object.
@@ -67,6 +69,7 @@ public class SrgTypeDescriptor
 		this.type = type;
 		this.arrayDepth = arrayDepth;
 		this.classType = null;
+		this.qualifiedName = generateQualifiedName();
 	}
 	
 	/**
@@ -79,9 +82,91 @@ public class SrgTypeDescriptor
 		this.type = Type.OBJECT;
 		this.arrayDepth = arrayDepth;
 		this.classType = classType;
+		this.qualifiedName = generateQualifiedName();
 	}
 	
-	public String getQualifiedName()
+	public SrgTypeDescriptor(String descriptor, int offset)
+	{
+		int arrDepth = 0;
+		int idx;
+		
+		while (descriptor.charAt(offset) == '[')
+		{
+			++arrDepth;
+			++offset;
+		}
+		
+		this.arrayDepth = arrDepth;
+		
+		switch (descriptor.charAt(offset))
+		{
+			case 'Z':
+				this.type = Type.BOOLEAN;
+				this.classType = null;
+				break;
+			case 'B':
+				this.type = Type.BYTE;
+				this.classType = null;
+				break;
+			case 'C':
+				this.type = Type.CHAR;
+				this.classType = null;
+				break;
+			case 'S':
+				this.type = Type.SHORT;
+				this.classType = null;
+				break;
+			case 'I':
+				this.type = Type.INT;
+				this.classType = null;
+				break;
+			case 'J':
+				this.type = Type.LONG;
+				this.classType = null;
+				break;
+			case 'F':
+				this.type = Type.FLOAT;
+				this.classType = null;
+				break;
+			case 'D':
+				this.type = Type.DOUBLE;
+				this.classType = null;
+				break;
+			case 'V':
+				this.type = Type.VOID;
+				this.classType = null;
+				break;					
+			case 'L':
+				this.type = Type.OBJECT;
+				idx = descriptor.indexOf(';', offset);
+				if (idx == -1)
+					throw new IllegalArgumentException("Could not parse method descriptor: Could not parse Object type");
+				
+				this.classType = new SrgClass(descriptor.substring(offset + 1, idx));
+				break;
+			default:
+				throw new IllegalArgumentException("Could not parse method descriptor: Unknown type");
+		}
+		
+		this.qualifiedName = generateQualifiedName();
+	}
+	
+	/**
+	 * Copy constructor
+	 * @param other type descriptor to copy
+	 */
+	private SrgTypeDescriptor(SrgTypeDescriptor other)
+	{		
+		this.type = other.type;
+		this.arrayDepth = other.arrayDepth;
+		this.classType = other.classType;
+		this.qualifiedName = other.qualifiedName;
+	}
+		
+	/**
+	 * Updates qualified name. Call this after changing the descriptor type.
+	 */
+	private String generateQualifiedName()
 	{
 		StringBuilder builder = new StringBuilder(arrayDepth + 1 + (type == Type.OBJECT ? 1 + classType.getQualifiedName().length() : 0) );
 		
@@ -131,6 +216,11 @@ public class SrgTypeDescriptor
 		}
 		
 		return builder.toString();
+	}
+	
+	public SrgTypeDescriptor clone()
+	{
+		return new SrgTypeDescriptor(this);
 	}
 	
 	@Override

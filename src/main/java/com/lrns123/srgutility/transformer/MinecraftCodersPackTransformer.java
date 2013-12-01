@@ -28,8 +28,11 @@ package com.lrns123.srgutility.transformer;
 
 import com.lrns123.srgutility.mcp.MinecraftCodersPackMapping;
 import com.lrns123.srgutility.srg.SrgClass;
+import com.lrns123.srgutility.srg.SrgClassMutator;
 import com.lrns123.srgutility.srg.SrgField;
+import com.lrns123.srgutility.srg.SrgFieldMutator;
 import com.lrns123.srgutility.srg.SrgMethod;
+import com.lrns123.srgutility.srg.SrgMethodMutator;
 import com.lrns123.srgutility.srg.SrgTypeDescriptor;
 import com.lrns123.srgutility.srg.SrgTypeDescriptor.Type;
 
@@ -49,49 +52,69 @@ public class MinecraftCodersPackTransformer implements MappingTransformer
 
 	public SrgClass transform(SrgClass input)
 	{
+		SrgClassMutator mutator = null;
+		
 		if (mapping.getPackageMapping().containsKey(input.getClassName()))
 		{
-			input.setPackageName(mapping.getPackageMapping().get(input.getClassName()));
+			mutator = input.getMutator();
+			mutator.setPackageName(mapping.getPackageMapping().get(input.getClassName()));
 		}
 		
-		return input;
+		return mutator != null ? mutator.get() : input;
 	}
 
 	public SrgField transform(SrgField input)
 	{
+		SrgFieldMutator mutator = null;
+		
 		if (input.getPackageName().equals("net/minecraft/src") && mapping.getPackageMapping().containsKey(input.getClassName()))
 		{
-			input.setPackageName(mapping.getPackageMapping().get(input.getClassName()));
+			mutator = input.getMutator();
+			mutator.setPackageName(mapping.getPackageMapping().get(input.getClassName()));
 		}
 		
 		if (mapping.getFieldMapping().containsKey(input.getFieldName()))
 		{
-			input.setFieldName(mapping.getFieldMapping().get(input.getFieldName()));
+			if (mutator == null)
+				mutator = input.getMutator();
+			
+			mutator.setFieldName(mapping.getFieldMapping().get(input.getFieldName()));
 		}
 		
-		return input;
+		return mutator != null ? mutator.get() : input;
 	}
 
 	public SrgMethod transform(SrgMethod input)
 	{
+		SrgMethodMutator mutator = null;
+		
 		if (input.getPackageName().equals("net/minecraft/src") && mapping.getPackageMapping().containsKey(input.getClassName()))
 		{
-			input.setPackageName(mapping.getPackageMapping().get(input.getClassName()));
+			mutator = input.getMutator();
+			mutator.setPackageName(mapping.getPackageMapping().get(input.getClassName()));
 		}
 		
 		if (mapping.getMethodMapping().containsKey(input.getMethodName()))
 		{
-			input.setMethodName(mapping.getMethodMapping().get(input.getMethodName()));
+			if (mutator == null)
+				mutator = input.getMutator();
+			
+			mutator.setMethodName(mapping.getMethodMapping().get(input.getMethodName()));
 		}
 		
-		for (SrgTypeDescriptor descriptor : input.getArguments())
+		int numArgs = input.getArgumentCount();
+		for (int i = 0; i != numArgs; ++i)
 		{
+			SrgTypeDescriptor descriptor = input.getArgument(i);
 			if (descriptor.getType() == Type.OBJECT)
 			{
 				SrgClass typeClass = descriptor.getClassType();
 				if (typeClass.getPackageName().equals("net/minecraft/src") && mapping.getPackageMapping().containsKey(typeClass.getClassName()))
 				{
-					typeClass.setPackageName(mapping.getPackageMapping().get(typeClass.getClassName()));
+					if (mutator == null)
+						mutator = input.getMutator();
+					
+					mutator.setArgument(i, new SrgClass(mapping.getPackageMapping().get(typeClass.getClassName()), typeClass.getClassName()), descriptor.getArrayDepth());
 				}
 			}
 		}
@@ -101,11 +124,14 @@ public class MinecraftCodersPackTransformer implements MappingTransformer
 			SrgClass typeClass = input.getReturnType().getClassType();
 			if (typeClass.getPackageName().equals("net/minecraft/src") && mapping.getPackageMapping().containsKey(typeClass.getClassName()))
 			{
-				typeClass.setPackageName(mapping.getPackageMapping().get(typeClass.getClassName()));
+				if (mutator == null)
+					mutator = input.getMutator();
+				
+				mutator.setReturnType(new SrgClass(mapping.getPackageMapping().get(typeClass.getClassName()), typeClass.getClassName()), input.getReturnType().getArrayDepth());
 			}
 		}
 		
-		return input;
+		return mutator != null ? mutator.get() : input;
 	}
 
 }

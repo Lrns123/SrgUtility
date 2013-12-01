@@ -27,23 +27,29 @@
 package com.lrns123.srgutility.srg;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import com.lrns123.srgutility.srg.SrgTypeDescriptor.Type;
 import com.lrns123.srgutility.util.ParseUtil;
 
-import lombok.Data;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 /**
  * Represents a method of a class.
  */
-@Data
+@EqualsAndHashCode
 public class SrgMethod
 {
-	private String packageName;
-	private String className;
-	private String methodName;
-	private ArrayList<SrgTypeDescriptor> arguments = new ArrayList<SrgTypeDescriptor>();
-	private SrgTypeDescriptor returnType;
+	@Getter private final String packageName;
+	@Getter private final String className;
+	@Getter private final String methodName;
+	@Getter(value = AccessLevel.PACKAGE) private final List<SrgTypeDescriptor> arguments;
+	@Getter private final SrgTypeDescriptor returnType;
+	
+	@Getter private final String methodDescriptor;
+	@Getter private final String qualifiedName;
+	@Getter private final String qualifiedNameAndDescriptor;
 	
 	public SrgMethod(String qualifiedNameAndDescriptor)
 	{
@@ -51,124 +57,119 @@ public class SrgMethod
 		if (idx == -1)
 			throw new IllegalArgumentException("Invalid method descriptor");
 		
-		String[] parts = ParseUtil.splitFQMN(qualifiedNameAndDescriptor.substring(0, idx - 1));
+		this.qualifiedName = qualifiedNameAndDescriptor.substring(0, idx - 1);
+		this.methodDescriptor = qualifiedNameAndDescriptor.substring(idx + 1);
+		this.qualifiedNameAndDescriptor = qualifiedNameAndDescriptor;
 		
-		methodName = parts[2];
-		className = parts[1];
-		packageName = parts[0];
+		String[] parts = ParseUtil.splitFQMN(qualifiedName);
 		
-		parseMethodDescriptor(qualifiedNameAndDescriptor.substring(idx + 1));
+		this.methodName = parts[2];
+		this.className = parts[1];
+		this.packageName = parts[0];
+		this.arguments = new ArrayList<SrgTypeDescriptor>();
+		
+		if (methodDescriptor.charAt(0) != '(')
+			throw new IllegalArgumentException("Could not parse method descriptor. Expected '(', got '" + methodDescriptor.charAt(0) + "' in " + methodDescriptor);
+		
+		for (int i = 1, len = methodDescriptor.length();;)
+		{
+			if (i >= len)
+				throw new IllegalArgumentException("Premature end of method descriptor");
+			
+			if (methodDescriptor.charAt(i) == ')')
+			{
+				returnType = new SrgTypeDescriptor(methodDescriptor, ++i);
+				break;
+			}
+			
+			SrgTypeDescriptor type = new SrgTypeDescriptor(methodDescriptor, i);
+			arguments.add(type);
+			i += type.getQualifiedName().length();
+		}		
 	}
 	
 	public SrgMethod(String qualifiedName, String methodDescriptor)
 	{
 		String[] parts = ParseUtil.splitFQMN(qualifiedName);
 		
-		methodName = parts[2];
-		className = parts[1];
-		packageName = parts[0];
+		this.qualifiedName = qualifiedName;
+		this.methodDescriptor = methodDescriptor;
+		this.qualifiedNameAndDescriptor = qualifiedName + " " + methodDescriptor;
 		
-		parseMethodDescriptor(methodDescriptor);
-	}
-	
-	private void parseMethodDescriptor(String signature)
-	{
-		boolean preArgs = true;
-		boolean postArgs = false;
+		this.methodName = parts[2];
+		this.className = parts[1];
+		this.packageName = parts[0];
+		this.arguments = new ArrayList<SrgTypeDescriptor>();		
 		
-		int len = signature.length();
-		int arrayDepth = 0;
+		if (methodDescriptor.charAt(0) != '(')
+			throw new IllegalArgumentException("Could not parse method descriptor. Expected '(', got '" + methodDescriptor.charAt(0) + "' in " + methodDescriptor);
 		
-		for (int i = 0; i < len; i++)
+		for (int i = 1, len = methodDescriptor.length();;)
 		{
-			char ch = signature.charAt(i);
+			if (i >= len)
+				throw new IllegalArgumentException("Premature end of method descriptor");
 			
-			if (preArgs)
+			if (methodDescriptor.charAt(i) == ')')
 			{
-				if (ch != '(')
-					throw new IllegalArgumentException("Could not parse method descriptor. Expected '(', got '" + ch + "' in " + signature);
-				
-				preArgs = false;
-				continue;
+				returnType = new SrgTypeDescriptor(methodDescriptor, ++i);
+				break;
 			}
 			
-			
-			SrgTypeDescriptor descriptor = null;
-			switch (ch)
-			{
-				case '[':
-					arrayDepth++;
-					break;
-				case 'Z':
-					descriptor = new SrgTypeDescriptor(Type.BOOLEAN, arrayDepth);
-					break;
-				case 'B':
-					descriptor = new SrgTypeDescriptor(Type.BYTE, arrayDepth);
-					break;
-				case 'C':
-					descriptor = new SrgTypeDescriptor(Type.CHAR, arrayDepth);
-					break;
-				case 'S':
-					descriptor = new SrgTypeDescriptor(Type.SHORT, arrayDepth);
-					break;
-				case 'I':
-					descriptor = new SrgTypeDescriptor(Type.INT, arrayDepth);
-					break;
-				case 'J':
-					descriptor = new SrgTypeDescriptor(Type.LONG, arrayDepth);
-					break;
-				case 'F':
-					descriptor = new SrgTypeDescriptor(Type.FLOAT, arrayDepth);
-					break;
-				case 'D':
-					descriptor = new SrgTypeDescriptor(Type.DOUBLE, arrayDepth);
-					break;
-				case 'V':
-					descriptor = new SrgTypeDescriptor(Type.VOID, arrayDepth);
-					break;					
-				case 'L':
-				{
-					String remainder = signature.substring(i + 1);
-					int end = remainder.indexOf(';');
-					if (end == -1)
-					{
-						throw new IllegalArgumentException("Could not parse method descriptor: Could not parse Object argument in " + signature);
-					}
-					
-					String classType = remainder.substring(0, end);
-					i += classType.length() + 1;
-					
-					descriptor = new SrgTypeDescriptor(new SrgClass(classType), arrayDepth);
-					break;
-				}
-				case ')':
-					if (postArgs)
-						throw new IllegalArgumentException("Could not pase method descriptor: Invalid character '" + ch + "' found in " + signature);
-					postArgs = true;
-					break;
-				default:
-					throw new IllegalArgumentException("Could not pase method descriptor: Invalid character '" + ch + "' found in " + signature);
-			}
-			
-			if (descriptor != null)
-			{
-				if (postArgs)
-				{
-					if (returnType != null)
-						throw new IllegalArgumentException("Could not parse method signature: Found multiple return types in " + signature);
-					
-					returnType = descriptor;
-				}
-				else
-				{
-					arguments.add(descriptor);
-				}
-				arrayDepth = 0;
-			}
+			SrgTypeDescriptor type = new SrgTypeDescriptor(methodDescriptor, i);
+			arguments.add(type);
+			i += type.getQualifiedName().length();
 		}
+
 	}
 	
-	public String getMethodDescriptor()
+	SrgMethod(String packageName, String className, String methodName, List<SrgTypeDescriptor> arguments, SrgTypeDescriptor returnType)
+	{
+		this.packageName = packageName;
+		this.className = className;
+		this.methodName = methodName;
+		this.arguments = arguments;
+		this.returnType = returnType;
+		
+		this.qualifiedName = generateQualifiedName();
+		this.methodDescriptor = generateMethodDescriptor();
+		this.qualifiedNameAndDescriptor = qualifiedName + " " + methodDescriptor;
+	}
+	
+	/**
+	 * Copy constructor
+	 * @param other Instance to copy
+	 */
+	private SrgMethod(SrgMethod other)
+	{
+		this.packageName = other.packageName;
+		this.className = other.className;
+		this.methodName = other.methodName;
+		this.arguments = other.arguments;		
+		this.returnType = other.returnType;
+		
+		this.methodDescriptor = other.methodDescriptor;
+		this.qualifiedName = other.qualifiedName;
+		this.qualifiedNameAndDescriptor = other.qualifiedNameAndDescriptor;
+	}
+			
+	public int getArgumentCount()
+	{
+		return arguments.size();
+	}
+	
+	public SrgTypeDescriptor getArgument(int idx)
+	{
+		return arguments.get(idx);
+	}
+	
+	private String generateQualifiedName()
+	{
+		if (packageName.isEmpty())
+			return className + "/" + methodName;
+		return packageName + "/" + className + "/" + methodName;
+	}
+	
+	private String generateMethodDescriptor()
 	{
 		StringBuilder signature = new StringBuilder();
 		
@@ -182,23 +183,25 @@ public class SrgMethod
 		
 		return signature.toString();
 	}
-	
-	public String getQualifiedName()
-	{
-		if (packageName.isEmpty())
-			return className + "/" + methodName + " " + getMethodDescriptor();
-		return packageName + "/" + className + "/" + methodName + " " + getMethodDescriptor();
-	}
-	
+
 	@Override
 	public SrgMethod clone()
 	{
-		return new SrgMethod(packageName + "/" + className + "/" + methodName, getMethodDescriptor());
+		return new SrgMethod(this);
 	}
 	
 	@Override
 	public String toString()
 	{
-		return getQualifiedName();
+		return qualifiedNameAndDescriptor;
+	}
+	
+	/**
+	 * Returns a mutator for this SrgClass. Allows the class to be modified using COW mechanics.
+	 * @return
+	 */
+	public SrgMethodMutator getMutator()
+	{
+		return new SrgMethodMutator(this);
 	}
 }

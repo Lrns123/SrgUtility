@@ -46,7 +46,7 @@ public class SrgMappingTransformer implements MappingTransformer
 		SrgClass output = mapping.getClassMapping(input);
 		if (output != null)
 		{
-			return output.clone();
+			return output;
 		}
 		
 		return input;
@@ -57,7 +57,7 @@ public class SrgMappingTransformer implements MappingTransformer
 		SrgField output = mapping.getFieldMapping(input);
 		if (output != null)
 		{
-			return output.clone();
+			return output;
 		}
 		
 		return input;
@@ -68,7 +68,7 @@ public class SrgMappingTransformer implements MappingTransformer
 		SrgMethod output = mapping.getMethodMapping(input);
 		if (output != null)
 		{
-			return output.clone();
+			return output;
 		}
 		
 		return input;

@@ -39,14 +39,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import lombok.Cleanup;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 import com.google.common.base.Joiner;
 import com.lrns123.srgutility.transformer.MappingTransformer;
 
 import net.md_5.specialsource.provider.InheritanceProvider;
 
+@EqualsAndHashCode
+@ToString
 public class SrgInheritanceMap
 {
-	private Map<SrgClass, List<SrgClass>> inheritanceMap = new HashMap<SrgClass, List<SrgClass>>();
+	@Getter private Map<SrgClass, List<SrgClass>> inheritanceMap = new HashMap<SrgClass, List<SrgClass>>();
 
 	public SrgInheritanceMap()
 	{
@@ -57,7 +64,7 @@ public class SrgInheritanceMap
 	 */
 	public SrgInheritanceMap(InheritanceProvider provider, SrgMapping mapping)
 	{
-		for (SrgClass clazz : mapping.getClassMappings().keySet())
+		for (SrgClass clazz : mapping.getClassMapping().keySet())
 		{
 			Collection<String> parents = provider.getParents(clazz.getQualifiedName());
 			
@@ -83,47 +90,32 @@ public class SrgInheritanceMap
 	
 	public void loadMapping(File inheritFile) throws IOException, IllegalArgumentException
 	{
-		FileReader freader = null;
-		BufferedReader reader = null;
+		@Cleanup BufferedReader reader = new BufferedReader(new FileReader(inheritFile));
 
-		try
+		String line;
+		while ((line = reader.readLine()) != null)
 		{
-			freader = new FileReader(inheritFile);
-			reader = new BufferedReader(freader);
-	
-			String line;
-			while ((line = reader.readLine()) != null)
+			int commentIndex = line.indexOf('#');
+			if (commentIndex != -1)
 			{
-				int commentIndex = line.indexOf('#');
-				if (commentIndex != -1)
-				{
-					line = line.substring(0, commentIndex);
-				}
-	
-				String tokens[] = line.trim().split(" ");
-				
-				if (tokens.length < 2)
-					continue;
-				
-				List<SrgClass> parents = new ArrayList<SrgClass>();
-				
-				SrgClass base = new SrgClass(tokens[0]);
-				
-				for (int i = 1; i < tokens.length; ++i)
-				{
-					parents.add(new SrgClass(tokens[i]));
-				}
-				
-				setParent(base, parents);
+				line = line.substring(0, commentIndex);
 			}
-		}
-		finally
-		{
-			if (reader != null)
-				reader.close();
+
+			String tokens[] = line.trim().split(" ");
 			
-			if (freader != null)
-				freader.close();
+			if (tokens.length < 2)
+				continue;
+			
+			List<SrgClass> parents = new ArrayList<SrgClass>();
+			
+			SrgClass base = new SrgClass(tokens[0]);
+			
+			for (int i = 1; i < tokens.length; ++i)
+			{
+				parents.add(new SrgClass(tokens[i]));
+			}
+			
+			setParent(base, parents);
 		}
 	}
 	
@@ -141,12 +133,7 @@ public class SrgInheritanceMap
 	{
 		return inheritanceMap.get(new SrgClass(className));
 	}
-	
-	public Map<SrgClass, List<SrgClass>> getInheritanceMap()
-	{
-		return inheritanceMap;
-	}
-	
+		
 	@Override
 	public SrgInheritanceMap clone()
 	{

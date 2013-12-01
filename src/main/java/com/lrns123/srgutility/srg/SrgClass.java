@@ -28,18 +28,18 @@ package com.lrns123.srgutility.srg;
 
 import com.lrns123.srgutility.util.ParseUtil;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 /**
  * Represents a class name for srg mappings.
  */
-@Data
-@AllArgsConstructor
-public class SrgClass
+@EqualsAndHashCode
+public final class SrgClass
 {
-	private String packageName;
-	private String className;
+	@Getter private final String packageName;
+	@Getter private final String className;
+	@Getter private final String qualifiedName;
 	
 	/**
 	 * Instantiates a new class name representation from an fully qualified name.
@@ -49,20 +49,28 @@ public class SrgClass
 	{
 		String[] parts = ParseUtil.splitFQN(qualifiedName);
 		
-		className = parts[1];
-		packageName = parts[0];
+		this.className = parts[1];
+		this.packageName = parts[0];
+		
+		this.qualifiedName = qualifiedName;
+	}
+	
+	public SrgClass(String packageName, String className)
+	{
+		this.packageName = packageName;
+		this.className = className;
+		this.qualifiedName = packageName.isEmpty() ? className : (packageName + '/' + className);
 	}
 	
 	/**
-	 * Returns the fully qualified name of the class represented by this object.
-	 * @return
+	 * Copy constructor
+	 * @param other Instance to copy
 	 */
-	public String getQualifiedName()
+	private SrgClass(SrgClass other)
 	{
-		if (packageName.isEmpty())
-			return className;
-		
-		return packageName + "/" + className;
+		packageName = other.packageName;
+		className = other.className;
+		qualifiedName = other.qualifiedName;
 	}
 	
 	/**
@@ -71,12 +79,21 @@ public class SrgClass
 	@Override
 	public SrgClass clone()
 	{
-		return new SrgClass(packageName, className);
+		return new SrgClass(this);
 	}
 	
 	@Override
 	public String toString()
 	{
-		return getQualifiedName();
+		return qualifiedName;
+	}
+	
+	/**
+	 * Returns a mutator for this SrgClass. Allows the class to be modified using COW mechanics.
+	 * @return
+	 */
+	public SrgClassMutator getMutator()
+	{
+		return new SrgClassMutator(this);
 	}
 }

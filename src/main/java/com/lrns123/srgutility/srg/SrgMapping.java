@@ -39,6 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import lombok.Cleanup;
+import lombok.Getter;
+
 import com.lrns123.srgutility.transformer.IdentityTransformer;
 import com.lrns123.srgutility.transformer.MappingTransformer;
 
@@ -51,10 +54,25 @@ public class SrgMapping
 	/**
 	 * Mapping tables. Contains input -> output mapping.
 	 */
-	private Map<SrgClass, SrgClass> classMapping = new HashMap<SrgClass, SrgClass>();
-	private Map<SrgField, SrgField> fieldMapping = new HashMap<SrgField, SrgField>();
-	private Map<SrgMethod, SrgMethod> methodMapping = new HashMap<SrgMethod, SrgMethod>();
+	@Getter private Map<SrgClass, SrgClass> classMapping;
+	@Getter private Map<SrgField, SrgField> fieldMapping;
+	@Getter private Map<SrgMethod, SrgMethod> methodMapping;
 
+	
+	public SrgMapping()
+	{
+		this.classMapping = new HashMap<SrgClass, SrgClass>();
+		this.fieldMapping = new HashMap<SrgField, SrgField>();
+		this.methodMapping = new HashMap<SrgMethod, SrgMethod>();
+	}
+	
+	SrgMapping(int classMappings, int fieldMappings, int methodMappings)
+	{
+		this.classMapping = new HashMap<SrgClass, SrgClass>(classMappings);
+		this.fieldMapping = new HashMap<SrgField, SrgField>(fieldMappings);
+		this.methodMapping = new HashMap<SrgMethod, SrgMethod>(methodMappings);
+	}
+	
 	/**
 	 * Adds a class mapping to the mapping tables.
 	 * 
@@ -101,21 +119,21 @@ public class SrgMapping
 	@Override
 	public SrgMapping clone()
 	{
-		SrgMapping temp = new SrgMapping();
+		SrgMapping temp = new SrgMapping(classMapping.size(), fieldMapping.size(), methodMapping.size());
 
 		for (Entry<SrgClass, SrgClass> entry : classMapping.entrySet())
 		{
-			temp.addClassMapping(entry.getKey().clone(), entry.getValue().clone());
+			temp.addClassMapping(entry.getKey(), entry.getValue());
 		}
 
 		for (Entry<SrgField, SrgField> entry : fieldMapping.entrySet())
 		{
-			temp.addFieldMapping(entry.getKey().clone(), entry.getValue().clone());
+			temp.addFieldMapping(entry.getKey(), entry.getValue());
 		}
 
 		for (Entry<SrgMethod, SrgMethod> entry : methodMapping.entrySet())
 		{
-			temp.addMethodMapping(entry.getKey().clone(), entry.getValue().clone());
+			temp.addMethodMapping(entry.getKey(), entry.getValue());
 		}
 
 		return temp;
@@ -128,7 +146,7 @@ public class SrgMapping
 	 */
 	public SrgMapping reverse()
 	{
-		SrgMapping temp = new SrgMapping();
+		SrgMapping temp = new SrgMapping(classMapping.size(), fieldMapping.size(), methodMapping.size());
 
 		for (Entry<SrgClass, SrgClass> entry : classMapping.entrySet())
 		{
@@ -177,7 +195,7 @@ public class SrgMapping
 			outputTransformer = new IdentityTransformer();
 		}
 
-		SrgMapping temp = new SrgMapping();
+		SrgMapping temp = new SrgMapping(classMapping.size(), fieldMapping.size(), methodMapping.size());
 
 		for (Entry<SrgClass, SrgClass> entry : classMapping.entrySet())
 		{
@@ -216,21 +234,21 @@ public class SrgMapping
 	 */
 	public SrgMapping identity()
 	{
-		SrgMapping temp = new SrgMapping();
+		SrgMapping temp = new SrgMapping(classMapping.size(), fieldMapping.size(), methodMapping.size());
 
 		for (Entry<SrgClass, SrgClass> entry : classMapping.entrySet())
 		{
-			temp.addClassMapping(entry.getKey(), entry.getKey().clone());
+			temp.addClassMapping(entry.getKey(), entry.getKey());
 		}
 
 		for (Entry<SrgField, SrgField> entry : fieldMapping.entrySet())
 		{
-			temp.addFieldMapping(entry.getKey(), entry.getKey().clone());
+			temp.addFieldMapping(entry.getKey(), entry.getKey());
 		}
 
 		for (Entry<SrgMethod, SrgMethod> entry : methodMapping.entrySet())
 		{
-			temp.addMethodMapping(entry.getKey(), entry.getKey().clone());
+			temp.addMethodMapping(entry.getKey(), entry.getKey());
 		}
 
 		/**
@@ -251,7 +269,7 @@ public class SrgMapping
 	 */
 	public SrgMapping filter(SrgMapping filter)
 	{
-		SrgMapping temp = new SrgMapping();
+		SrgMapping temp = new SrgMapping(classMapping.size(), fieldMapping.size(), methodMapping.size());
 
 		for (Entry<SrgClass, SrgClass> entry : classMapping.entrySet())
 		{
@@ -288,7 +306,7 @@ public class SrgMapping
 	}
 	
 	// Optimized split function for faster parsing.
-	private static int fastSplit(String input, String[] array, char delimiter)
+	private static int fastSplit(String input, String[] array, char delimiter, int skip)
 	{
 		int off = 0;
         int next = 0;
@@ -299,7 +317,10 @@ public class SrgMapping
         	if (idx == array.length)
         		return idx;
         	
-        	array[idx++] = input.substring(off, next);
+        	if (skip > 0)        	
+        		--skip;        	
+        	else        	
+        		array[idx++] = input.substring(off, next);
         	
         	off = next + 1;
         }
@@ -314,61 +335,51 @@ public class SrgMapping
 	
 	public void loadMapping(File srgFile) throws IOException, IllegalArgumentException
 	{
-		BufferedReader reader = null;
-
-		try
+		@Cleanup BufferedReader reader = new BufferedReader(new FileReader(srgFile));
+		String tokens[] = new String[4];
+		String line;
+		
+		while ((line = reader.readLine()) != null)
 		{
-			reader = new BufferedReader(new FileReader(srgFile));
-			String tokens[] = new String[5];
-			String line;
+			int numArgs = fastSplit(line, tokens, ' ', 1);
 			
-			while ((line = reader.readLine()) != null)
+			if (numArgs == 0)
+				continue;
+							
+			if (line.startsWith("CL:"))
 			{
-				int numTokens = fastSplit(line, tokens, ' ');
+				if (numArgs < 2)
+					System.out.println("Invalid CL entry found in srg: " + line);
 				
-				if (numTokens == 0)
-					continue;
-								
-				if (tokens[0].equals("CL:"))
-				{
-					if (numTokens < 3)
-						throw new IllegalArgumentException("Invalid CL entry found in srg: " + line);
-					
-					SrgClass input = new SrgClass(tokens[1]);
-					SrgClass output = new SrgClass(tokens[2]);
-					
-					addClassMapping(input, output);				
-				}
-				else if (tokens[0].equals("FD:"))
-				{
-					if (numTokens < 3)
-						throw new IllegalArgumentException("Invalid FD entry found in srg: " + line);
-					
-					SrgField input = new SrgField(tokens[1]);
-					SrgField output = new SrgField(tokens[2]);
-					
-					addFieldMapping(input, output);			
-				}
-				else if (tokens[0].equals("MD:"))
-				{
-					if (numTokens < 5)
-						throw new IllegalArgumentException("Invalid MD entry found in srg: " + line);
-					
-					SrgMethod input = new SrgMethod(tokens[1], tokens[2]);
-					SrgMethod output = new SrgMethod(tokens[3], tokens[4]);
-					
-					addMethodMapping(input, output);		
-				}
+				SrgClass input = new SrgClass(tokens[0]);
+				SrgClass output = new SrgClass(tokens[1]);
+				
+				addClassMapping(input, output);				
 			}
-		}
-		finally
-		{
-			if (reader != null)
-				reader.close();
-		}
+			else if (line.startsWith("FD:"))
+			{
+				if (numArgs < 2)
+					System.out.println("Invalid FD entry found in srg: " + line);
+				
+				SrgField input = new SrgField(tokens[0]);
+				SrgField output = new SrgField(tokens[1]);
+				
+				addFieldMapping(input, output);			
+			}
+			else if (line.startsWith("MD:"))
+			{
+				if (numArgs < 4)
+					System.out.println("Invalid MD entry found in srg: " + line);
+				
+				SrgMethod input = new SrgMethod(tokens[0], tokens[1]);
+				SrgMethod output = new SrgMethod(tokens[2], tokens[3]);
+				
+				addMethodMapping(input, output);		
+			}
+		}		
 	}
 	
-	public void write(File outFile) throws IOException
+	public void writeSorted(File outFile) throws IOException
 	{
 		List<String> lines = new ArrayList<String>();
 		
@@ -388,31 +399,63 @@ public class SrgMapping
 		}
 		
 		Collections.sort(lines);
-		
-		PrintWriter writer = null;
-		
+	
 		if (!outFile.getParentFile().exists())
 		{
 			outFile.getParentFile().mkdirs();
 		}
 		
-		try
-		{
-			writer = new PrintWriter(outFile);
+		@Cleanup PrintWriter writer = new PrintWriter(outFile);
 			
-			writer.println("# Mapping generated by Srg Utility (c) 2013 Lourens \"Lrns123\" Elzinga");
-			writer.println("# Generated on " + new Date());
-			
-			for (String line : lines)
-			{
-				writer.println(line);
-			}
-		}
-		finally
+		writer.println("# Mapping generated by Srg Utility (c) 2013 Lourens \"Lrns123\" Elzinga");
+		writer.println("# Generated on " + new Date());
+		
+		for (String line : lines)
 		{
-			if (writer != null)
-				writer.close();
+			writer.println(line);
 		}
+
+	}
+	
+	public void write(File outFile) throws IOException
+	{
+		if (!outFile.getParentFile().exists())
+		{
+			outFile.getParentFile().mkdirs();
+		}
+		
+		@Cleanup PrintWriter writer = new PrintWriter(outFile);
+			
+		writer.println("# Mapping generated by Srg Utility (c) 2013 Lourens \"Lrns123\" Elzinga");
+		writer.println("# Generated on " + new Date());
+		
+		for (Entry<SrgClass, SrgClass> entry : classMapping.entrySet())
+		{
+			writer.print("CL: ");
+			writer.print(entry.getKey());
+			writer.print(' ');
+			writer.print(entry.getValue());
+			writer.println();
+		}
+
+		for (Entry<SrgField, SrgField> entry : fieldMapping.entrySet())
+		{
+			writer.print("FD: ");
+			writer.print(entry.getKey());
+			writer.print(' ');
+			writer.print(entry.getValue());
+			writer.println();
+		}
+
+		for (Entry<SrgMethod, SrgMethod> entry : methodMapping.entrySet())
+		{
+			writer.print("MD: ");
+			writer.print(entry.getKey());
+			writer.print(' ');
+			writer.print(entry.getValue());
+			writer.println();
+		}
+
 	}
 	
 	public SrgClass getClassMapping(SrgClass input)
@@ -425,11 +468,6 @@ public class SrgMapping
 		return classMapping.get(new SrgClass(inputSignature));
 	}
 	
-	public Map<SrgClass, SrgClass> getClassMappings()
-	{
-		return classMapping;
-	}
-	
 	public SrgField getFieldMapping(SrgField input)
 	{
 		return fieldMapping.get(input);
@@ -439,12 +477,7 @@ public class SrgMapping
 	{
 		return fieldMapping.get(new SrgField(inputSignature));
 	}
-	
-	public Map<SrgField, SrgField> getFieldMappings()
-	{
-		return fieldMapping;
-	}
-	
+		
 	public SrgMethod getMethodMapping(SrgMethod input)
 	{
 		return methodMapping.get(input);
@@ -453,10 +486,5 @@ public class SrgMapping
 	public SrgMethod getMethodMapping(String inputSignature)
 	{
 		return methodMapping.get(new SrgMethod(inputSignature));
-	}
-	
-	public Map<SrgMethod, SrgMethod> getMethodMappings()
-	{
-		return methodMapping;
 	}
 }

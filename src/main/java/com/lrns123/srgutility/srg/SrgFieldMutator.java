@@ -26,68 +26,60 @@
  */
 package com.lrns123.srgutility.srg;
 
-import com.lrns123.srgutility.util.ParseUtil;
-
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-/**
- * Represents a field within a class.
- */
-@EqualsAndHashCode
-public final class SrgField
+public class SrgFieldMutator
 {
-	@Getter private final String packageName;
-	@Getter private final String className;
-	@Getter private final String fieldName;
-	@Getter private final String qualifiedName;
-	
-	public SrgField(String qualifiedName)
-	{
-		String[] parts = ParseUtil.splitFQMN(qualifiedName);
-
-		this.packageName = parts[0];
-		this.className = parts[1];	
-		this.fieldName = parts[2];
-		
-		this.qualifiedName = packageName.isEmpty() ? (className + "/" + fieldName) : (packageName + "/" + className + "/" + fieldName);
-	}
-	
-	public SrgField(String packageName, String className, String fieldName)
-	{
-		this.packageName = packageName;
-		this.className = className;	
-		this.fieldName = fieldName;
-		
-		this.qualifiedName = packageName.isEmpty() ? (className + "/" + fieldName) : (packageName + "/" + className + "/" + fieldName);
-	}
-	
-	private SrgField(SrgField other)
-	{
-		this.packageName = other.packageName;
-		this.className = other.className;
-		this.fieldName = other.packageName;
-		this.qualifiedName = other.qualifiedName;
-	}
+	private SrgField reference;
+	@Getter private boolean modified = false;
 			
-	@Override
-	public SrgField clone()
+	@Getter private String packageName;
+	@Getter private String className;
+	@Getter private String fieldName;
+	
+	/**
+	 * Qualified name of the *unmodified* class.
+	 */
+	@Getter private String qualifiedName;
+	
+	/**
+	 * Instantiates a new class name representation from an fully qualified name.
+	 * @param qualifiedName Fully qualified name of the class (e.g. 'package/of/the/Class')
+	 */
+	SrgFieldMutator(SrgField reference)
 	{
-		return new SrgField(this);
+		this.reference = reference;
+		
+		this.className = reference.getClassName();
+		this.packageName = reference.getPackageName();
+		this.fieldName = reference.getFieldName();
+		
+		this.qualifiedName = reference.getQualifiedName();
 	}
 	
-	@Override
-	public String toString()
+	public void setPackageName(String name)
 	{
-		return qualifiedName;
+		modified = true;
+		packageName = name;
+	}
+	
+	public void setClassName(String name)
+	{
+		modified = true;
+		className = name;
+	}
+	
+	public void setFieldName(String name)
+	{
+		modified = true;
+		fieldName = name;
 	}
 	
 	/**
-	 * Returns a mutator for this SrgClass. Allows the class to be modified using COW mechanics.
-	 * @return
+	 * Returns the mutated SrgField. (If no elements have been changed, the original SrgField is returned)
 	 */
-	public SrgFieldMutator getMutator()
+	public SrgField get()
 	{
-		return new SrgFieldMutator(this);
+		return modified ? new SrgField(packageName, className, fieldName) : reference;
 	}
 }
